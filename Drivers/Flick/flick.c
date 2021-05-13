@@ -159,3 +159,4 @@ flick_data_t flick_poll_data(uint32_t* gest_info, uint32_t* touch_info, airwheel
 
 	return ret;
 }
+// sprawdzam czy to wszystko dziala
