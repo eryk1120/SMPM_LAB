@@ -155,7 +155,10 @@ int main(void)
 
   /* Flick */
   flick_reset();
-  flick_set_param(0x90, 0x20, 0x20);
+  flick_set_param(0x90, 0x20, 0x20); //ustawienie odpowiednich parametrow do wlaczenia airwheela
+  flick_set_param(0x97, 0x08, 0x08); //ustawienie odpowiednich parametrow do wlaczenia dotyku
+  flick_set_param(0x85, 0x66, 0x66); //ustawienie odpowiednich parametrow do wlaczenia przesunięcia nad flickiem.
+                                     //Ustawiony został bit 1, 2, 5, 6. 37 strona w dokumentacji tlumaczy co oznaczaja odpowiednie bity
 
   /* IMU */
   uint8_t i2c2_buf[10];
@@ -189,6 +192,7 @@ int main(void)
     /* USER CODE BEGIN 3 */
 
 	  uint32_t gesture, touch;
+
 	  airwheel_data_t airwheel;
 	  char str[20];
 
@@ -210,6 +214,10 @@ int main(void)
 
 		  airwheel.new_data = FLICK_NO_DATA;
 	  }
+	  if(gesture&(1<<1))
+		  BSP_LCD_Clear(LCD_COLOR_GREEN);
+	  if(gesture&(1<<2))
+		  BSP_LCD_Clear(LCD_COLOR_BLUE);
 
 	  sprintf(str, "g:%lx             ", gesture);
 	  BSP_LCD_DisplayStringAtLine(1, (uint8_t *) str);
@@ -217,6 +225,7 @@ int main(void)
 	  BSP_LCD_DisplayStringAtLine(2, (uint8_t *) str);
 	  sprintf(str, "t:%lx             ", touch);
 	  BSP_LCD_DisplayStringAtLine(3, (uint8_t *) str);
+
 
 	  if ((uint8_t) gesture == 2)
 		  HAL_GPIO_TogglePin(MOT_DIR1_GPIO_Port, MOT_DIR1_Pin);
