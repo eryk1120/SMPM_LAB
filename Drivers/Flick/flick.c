@@ -109,7 +109,7 @@ flick_data_t flick_poll_data(uint32_t* gest_info, uint32_t* touch_info, airwheel
 
 	if (flick_receive() == FLICK_MSG_SENSOR_DATA)
 	{
-		uint16_t data_out_mask = (flick_payload[5] << 8) + flick_payload[4];
+		uint16_t data_out_mask = (flick_payload[5] << 8) + flick_payload[4]; //strona 42 w dokumentacji
 		uint8_t sys_info = flick_payload[7];
 
 		uint8_t data_ptr = 8;
@@ -155,8 +155,22 @@ flick_data_t flick_poll_data(uint32_t* gest_info, uint32_t* touch_info, airwheel
 			ret = FLICK_NEW_DATA;
 		}
 
+		//check XYZPosition field
+		/*if ((data_out_mask & (1<<4))&&(sys_info & (1<<0)))
+		{
+			*Zp = (flick_payload[5+data_ptr] << 8) +
+					(flick_payload[4+data_ptr]);
+			*Yp = (flick_payload[3+data_ptr] << 8) +
+					(flick_payload[2+data_ptr]);
+			*Xp = (flick_payload[1+data_ptr] << 8) +
+					(flick_payload[data_ptr]);
+
+
+			data_ptr += 6;
+			ret = FLICK_NEW_DATA;
+		}*/
+
 	}
 
 	return ret;
 }
-// sprawdzam czy to wszystko dziala
