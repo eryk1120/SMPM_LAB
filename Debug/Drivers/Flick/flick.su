@@ -1,4 +1,0 @@
-flick.c:42:13:flick_receive	24	static
-flick.c:76:6:flick_reset	8	static
-flick.c:86:6:flick_set_param	48	static
-flick.c:106:14:flick_poll_data	32	static
