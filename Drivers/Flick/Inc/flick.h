@@ -68,6 +68,9 @@ typedef struct {
 	flick_data_t new_data;	/**< is new valid data reported? */
 	uint8_t position;		/**< the current angular position with a resolution of 32 counts for a full revolution */
 	uint8_t count;			/**< counts of full rotations */
+	uint16_t X;
+	uint16_t Y;
+	uint16_t Z;
 } airwheel_data_t;
 
 /**
