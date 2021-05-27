@@ -192,7 +192,7 @@ int main(void)
     /* USER CODE BEGIN 3 */
 
 	  uint32_t gesture, touch;
-
+	  uint16_t Xpom,Ypom,Zpom;
 	  airwheel_data_t airwheel;
 	  char str[20];
 
@@ -214,9 +214,12 @@ int main(void)
 
 		  airwheel.new_data = FLICK_NO_DATA;
 	  }
-	  if(gesture&(1<<1))
+	  Xpom=airwheel.X;
+	  Ypom=airwheel.Y;
+	  Zpom=airwheel.Z;
+	  if((gesture & 0xFF)==2)//west to east
 		  BSP_LCD_Clear(LCD_COLOR_GREEN);
-	  if(gesture&(1<<2))
+	  if((gesture & 0xFF)==3)//east to west
 		  BSP_LCD_Clear(LCD_COLOR_BLUE);
 
 	  sprintf(str, "g:%lx             ", gesture);
@@ -225,8 +228,12 @@ int main(void)
 	  BSP_LCD_DisplayStringAtLine(2, (uint8_t *) str);
 	  sprintf(str, "t:%lx             ", touch);
 	  BSP_LCD_DisplayStringAtLine(3, (uint8_t *) str);
-
-
+	  sprintf(str, "X:%d             ", Xpom);
+	  BSP_LCD_DisplayStringAtLine(4, (uint16_t *) str);
+	  sprintf(str, "Y:%d             ", Ypom);
+	  BSP_LCD_DisplayStringAtLine(5, (uint16_t *) str);
+	  sprintf(str, "Z:%d             ", Zpom);
+	  BSP_LCD_DisplayStringAtLine(6, (uint16_t *) str);
 	  if ((uint8_t) gesture == 2)
 		  HAL_GPIO_TogglePin(MOT_DIR1_GPIO_Port, MOT_DIR1_Pin);
 

@@ -156,19 +156,19 @@ flick_data_t flick_poll_data(uint32_t* gest_info, uint32_t* touch_info, airwheel
 		}
 
 		//check XYZPosition field
-		/*if ((data_out_mask & (1<<4))&&(sys_info & (1<<0)))
+		if ((data_out_mask & (1<<4))&&(sys_info & (1<<0)))
 		{
-			*Zp = (flick_payload[5+data_ptr] << 8) +
+			airwheel->Z = (flick_payload[5+data_ptr] << 8) +
 					(flick_payload[4+data_ptr]);
-			*Yp = (flick_payload[3+data_ptr] << 8) +
+			airwheel->Y = (flick_payload[3+data_ptr] << 8) +
 					(flick_payload[2+data_ptr]);
-			*Xp = (flick_payload[1+data_ptr] << 8) +
+			airwheel->X = (flick_payload[1+data_ptr] << 8) +
 					(flick_payload[data_ptr]);
 
 
 			data_ptr += 6;
 			ret = FLICK_NEW_DATA;
-		}*/
+		}
 
 	}
 
