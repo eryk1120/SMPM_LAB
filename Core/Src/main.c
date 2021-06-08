@@ -83,7 +83,7 @@ static void MX_I2C2_Init(void);
 /* USER CODE BEGIN 0 */
 
 
-void Pulse_Counter(void)
+void Pulse_Counter(void) //komentarz
 {
 	if (pulse_cnt > 0) pulse_cnt--;
 	else
