@@ -1,0 +1,8 @@
+lcd.c:56:13:SPIx_Write	24	static
+lcd.c:73:13:SPIx_Init	8	static
+lcd.c:81:13:SPIx_DeInit	8	static
+lcd.c:89:13:SPIx_Error	8	static
+lcd.c:103:6:LCD_IO_Init	8	static
+lcd.c:125:6:LCD_IO_WriteReg	16	static
+lcd.c:143:6:LCD_IO_WriteMultipleData	24	static
+lcd.c:199:6:LCD_Delay	16	static

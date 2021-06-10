@@ -1,5 +1,7 @@
-#include "GFX_FUNCTIONS.h"
+
 #include "ST7735.h"
+#include "font5x7.h"
+#include "font6x9.h"
 /*zmienne z innych części programu */
 
 /* z silnika : */
@@ -7,7 +9,26 @@
 #define current_angle		// aktualne położenie silnika
 #define predicted_angle		// docelowe położenie silnika
 
-
+#define BLACK     0x0000
+#define RED       0xf800
+#define GREEN     0x07e0
+#define BLUE      0x001f
+#define YELLOW    0xffe0
+#define MAGENTA   0xf81f
+#define CYAN      0x07ff
+#define WHITE     0xffff
+uint16_t gesture;
+uint16_t gesture_2;
+uint16_t gesture_rot_direction;
+/* deklaracje wszystkich funkcji żeby sie nie wywalało od czapy */
+void Screen_Motor_Steering( uint16_t gesture_2);
+void GoTo_0_mode ( uint16_t gesture);
+void GoTo_1_mode(uint16_t gesture);
+void potentiometer_animation(int gesture_rot_direction, uint16_t Screen_Height, uint16_t Screen_Width);
+void Angle_menu (const wchar_t *Title, uint16_t current_angle, const wchar_t *Mode );
+void Current_angle_screen(int current_angle);
+void Screen_Angular_Velocity(int angular_velocity);
+void Euler_Angular_Reading_Panel(int Xi, int Yi, int Zi);
 /* Ekran startowy */
 void Start_Screen (uint16_t gesture)
 {
@@ -24,25 +45,27 @@ void Start_Screen (uint16_t gesture)
 
 	switch (gesture)
 	{
-	case 1
+	case 1:
 	hagl_fill_rectangle(1,1,50,30, CYAN);
 	hagl_putPtext(u"Ster silnikiem",2,2, RED, font5x7);
 	
-	Screen_Motor_Steering();
+	Screen_Motor_Steering(gesture_2);
+	break;
 	
-	case 2
+	case 2:
 	hagl_fill_rectangle(1,129,50,159, CYAN);
 	hagl_putPtext(u"predkosc katowa",2,130, RED, font5x7);
+	break;
 	
-	
-	case 3
+	case 3:
 	hagl_fill_rectangle(77,1,77+50,30+1, CYAN);
 	hagl_putPtext(u"Info",78,2, RED, font5x7);
+	break;
 	
-	
-	case 4
+	case 4:
 	hagl_fill_rectangle(77,129,77+50,30+129, CYAN);
 	hagl_put_text(u"Euler",78,130, RED, font5x7);
+	break;
 	}
 }
 
@@ -69,19 +92,21 @@ void Screen_Motor_Steering( uint16_t gesture_2)
 		hagl_put_text("TRYB 0", pos_x0 + 5, 145, RED, font6x9);
 		
 		GoTo_0_mode();
+		break;
 		
 		case 2:
 		hagl_fill_rounded_rectangle( pos_x0, 120, pos_x0 + width, 120 + height, 3, CYAN);
 		hagl_put_text("TRYB 1", pos_x0 + 5, 125, RED, font6x9);
-		
+
 		GoTo_1_mode();
+		break;
 	}
 }
 
 
 /*kąty wybierane za pomocą gestu obracania palcem */
 /* panel trybu 0 pracy silnika - poruszanie sie z kierunku a na kierunek B */
-void GoTo_0_mode ( )
+void GoTo_0_mode ( uint16_t gesture)
 {
 	/* Menu trybu 0 */
 	hagl_fill_rectangle(1,1,50,30, CYAN);
@@ -103,46 +128,49 @@ void GoTo_0_mode ( )
 		switch (gesture)
 	{
 		
-	case 2
+	case 2:
 	hagl_fill_rectangle(1,129,50,159, CYAN);
 	hagl_putPtext(u"Kat startowy",2,130, RED, font5x7);
 	
 	/*zadanie kąta początkowego */
 	GoTo_Start_angle_screen();
+	break;
 	
-	
-	case 3
+	case 3:
 	hagl_fill_rectangle(77,1,77+50,30+1, CYAN);
 	hagl_putPtext(u"Powrot",78,2, RED, font5x7);
 	 
-	Screen_Motor_Steering();
-	
-	case 4
+	Screen_Motor_Steering(gesture_2);
+	break;
+	case 4:
 	hagl_fill_rectangle(77,129,77+50,30+129, CYAN);
 	hagl_put_text(u"Kat obrot",78,130, RED, font5x7);
 	
 	/* ekran do nastawienia kąta obrotu silnika */
 	GoTo_rotate_angle_settings();	
+	break;
 	
-	case 5 
+	case 5 :
 	hagl_fill_rectangle(80-24.5,74-15+10,80+24.5,74+15+10, CYAN);
 	hagl_put_text(u"Kat bierzacy",81-24.5,75-15+10, RED, font5x7);
 	
 	//odczyt bierzacego kata
 	GoTo_Current_angle_screen();
+	break;
 	
-	case 6 
+	case 6:
 	hagl_fill_rectangle(80-24.5,74-15-10,80+24.5,74+15-10, CYAN);
 	hagl_put_text(u"Czas obrotu",81-24.5,75-15-10, RED, font5x7);
 	
 	//ekran do nastawiania czasu obrotu silnika z kierunku A na kierunek B
 	GoTo_Motor_rotation_time_screen();
+	break;
 	}
 }
 
 
 /* panel trybu 1 - nadążanie na kierunek A */
-void GoTo_1_mode()
+void GoTo_1_mode(uint16_t gesture)
 {
 	
 	/* Menu trybu 1 */
@@ -152,7 +180,7 @@ void GoTo_1_mode()
 		hagl_fill_rectangle(1,129,50,159, YELLOW);
 		hagl_fill_rectangle(77,1,77+50,30+1, YELLOW);
 		hagl_fill_rectangle(77,129,77+50,129+30, YELLOW);
-		hagl_fill_rectangle(80-24.5,74-15,80+24.5,74+15 YELLOW); //na środku poj.
+		hagl_fill_rectangle(80-24.5,74-15,80+24.5,74+15, YELLOW); //na środku poj.
 		
 		hagl_put_text(u"Kat startowy",2,130, BLACK, font5x7);
 		hagl_put_text(u"Powrot",78,2, BLACK, font5x7);
@@ -162,33 +190,36 @@ void GoTo_1_mode()
 			switch (gesture)
 		{
 			
-		case 2
+		case 2:
 		hagl_fill_rectangle(1,129,50,159, CYAN);
 		hagl_putPtext(u"Kat startowy",2,130, RED, font5x7);
 		
 		/*zadanie kata poczatkowego */
 		GoTo_Start_angle_screen();
+		break;
 		
-		
-		case 3
+		case 3:
 		hagl_fill_rectangle(77,1,77+50,30+1, CYAN);
 		hagl_putPtext(u"Powrot",78,2, RED, font5x7);
 		 
-		Screen_Motor_Steering();
+		Screen_Motor_Steering(gesture);
+		break;
 		
-		case 4
+		case 4:
 		hagl_fill_rectangle(77,129,77+50,30+129, CYAN);
 		hagl_put_text(u"Kat obrot",78,130, RED, font5x7);
 		
 		/* ekran do nastawienia kata obrotu silnika */
 		GoTo_rotate_angle_settings();	
+		break;
 		
-		case 5 
+		case 5:
 		hagl_fill_rectangle(80-24.5,74-15+10,80+24.5,74+15+10, CYAN);
-		hagl_put_text(u"Kat bierzacy",81-24.5,75-15+10, RED, font5x7);
+		hagl_put_text(u"Kat biezacy",81-24.5,75-15+10, RED, font5x7);
 			
 		//odczyt biezacego kata
 		GoTo_Current_angle_screen();
+		break;
 		}
 }
 
@@ -250,7 +281,7 @@ void Angle_menu (const wchar_t *Title, uint16_t current_angle, const wchar_t *Mo
 	hagl_put_text(*Mode, 2, 2, BLACK, font6x9);
 	
 	/* wyświetlanie aktualnej wartości kąta na dole na środku ekranu */ 
-	hagl_fill_rounded_rectangle(20, 35, 40, 93, 3, CYAN;
+	hagl_fill_rounded_rectangle(20, 35, 40, 93, 3, CYAN);
 	hagl_put_text(current_angle, 22, 37, YELLOW, font6x9);
 	potentiometer_animation( gesture_rot_direction, 160, 128);
 	
@@ -285,13 +316,15 @@ void Current_angle_screen(int current_angle)
 		hagl_put_text(current_angle,81-50,75-30,BLACK, font10x14);
 		
 		switch (gesture)
-		
-		case 2
+		{
+		case 2:
 				hagl_fill_rectangle(77,1,77+50,30+1, CYAN);
 				hagl_putPtext(u"Powrot",78,2, RED, font5x7);
 				
 				/*Powrot do menu glownego */
 				GoTo_Start_Screen();
+				break;
+		}
 	}
 
 
@@ -305,16 +338,18 @@ void Screen_Angular_Velocity(int angular_velocity)
 		hagl_fill_rectangle(80-50,74-30,80+50,74+30, YELLOW);
 		
 		hagl_put_text(u"Powrot",78,2, BLACK, font5x7);
-		hagl_put_text(angular_velocity,81-50,75-30,BLACK, font10x14);
+		hagl_put_text(angular_velocity,81-50,75-30,BLACK, font6x9);
 		
 		switch (gesture)
-		
-		case 2
+		{
+		case 2:
 				hagl_fill_rectangle(77,1,77+50,30+1, CYAN);
 				hagl_putPtext(u"Powrot",78,2, RED, font5x7);
 				
 				/*Powrot do menu glownego */
 				GoTo_Start_Screen();
+				break;
+		}
 	}
 
 
@@ -332,17 +367,19 @@ void Euler_Angular_Reading_Panel(int Xi, int Yi, int Zi)
 		
 		hagl_put_text(u"Powrot",78,2, BLACK, font5x7);
 		
-		hagl_put_text(Yi,81-25,75-15, BLACK, font10x14);
-		hagl_put_text(Xi,81-25,75+15+10, BLACK, font10x14);
-		hagl_put_text(Zi,81-25,75-15-10-30, BLACK, font10x14);
+		hagl_put_text(Yi,81-25,75-15, BLACK, font6x9);
+		hagl_put_text(Xi,81-25,75+15+10, BLACK, font6x9);
+		hagl_put_text(Zi,81-25,75-15-10-30, BLACK, font6x9);
 		
 		switch (gesture)
-		
-		case 2
+		{
+		case 2:
 				hagl_fill_rectangle(77,1,77+50,30+1, CYAN);
 				hagl_putPtext(u"Powrot",78,2, RED, font5x7);
 				
 				/*Powrot do menu glownego */
 				GoTo_Start_Screen();
+				break;
+		}
 	}
-}
+
