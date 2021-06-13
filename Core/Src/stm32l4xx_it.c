@@ -208,7 +208,7 @@ void TIM2_IRQHandler(void)
   HAL_TIM_IRQHandler(&htim2);
   /* USER CODE BEGIN TIM2_IRQn 1 */
 
-  Pulse_Counter();
+  Pulse_Counter(); //odlicza przepełnienie timera 2
 
   /* USER CODE END TIM2_IRQn 1 */
 }
