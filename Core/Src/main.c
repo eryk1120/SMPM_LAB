@@ -94,7 +94,9 @@ void Pulse_Counter(void) //proces do zliczania impulsów
 		//Można zmienić COUNTER aby było wolniej szybciej (zmienia tylko czas), ale ogólnie tak jak jest to jest spoko
 
 		//zegar to 1000000 impulsów na sekundę (wartość 2000 w ustawieniach timera ma zwiazek z tym co tutaj w funkcji ustawiamy)
+
 		//licznik "ładujemy do 2000 impulsów i liczymy w dół => 2000*1/1000000s = 0,002 s
+
 		//2000 nie ustawione jest bez znaczenia
 		//w liczniku ustawiamy też wartosć 1000 i to ma zwiazek z przebiegiem (jak długie i o jakim wypełnieniu impulsy otrzymamy)
 
@@ -107,6 +109,18 @@ void Pulse_Counter(void) //proces do zliczania impulsów
   * @brief  The application entry point.
   * @retval int
   */
+
+
+/**
+ * Informacje wstępne
+ *
+ * przełożenie przekładni i=10
+ * mikrokroki 1/16
+ * na pełen obrót stołu nalezy wykonać 32000 mikrokroków
+ */
+
+
+
 int main(void)
 {
   /* USER CODE BEGIN 1 */
@@ -190,11 +204,14 @@ int main(void)
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
+
 	while (1)
 	{
     /* USER CODE END WHILE */
 
-    /* USER CODE BEGIN 3 */
+
+	  /* USER CODE BEGIN 3 */
+
 
 		uint32_t gesture, touch;
 		airwheel_data_t airwheel;
@@ -379,15 +396,6 @@ int main(void)
 
 
 
-
-
-
-
-
-
-
-
-	}
   /* USER CODE END 3 */
 }
 
