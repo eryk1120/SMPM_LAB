@@ -62,7 +62,7 @@ I2C_HandleTypeDef *hi2cflick = &hi2c1;
 
 SPI_HandleTypeDef *hnucleo_Spi = &hspi2;
 
-int pulse_cnt;
+int pulse_cnt; //zmienna liczba impulsów
 
 /* USER CODE END PV */
 
@@ -83,13 +83,21 @@ static void MX_I2C2_Init(void);
 /* USER CODE BEGIN 0 */
 
 
-void Pulse_Counter(void) //komentarz
+void Pulse_Counter(void) //proces do zliczania impulsów
 {
 	if (pulse_cnt > 0) pulse_cnt--;
 	else
 	{
-		HAL_TIM_PWM_Stop_IT(&htim2, TIM_CHANNEL_2);
-		__HAL_TIM_SET_COUNTER(&htim2, 2000);
+		HAL_TIM_PWM_Stop_IT(&htim2, TIM_CHANNEL_2); //odliczamy ilosć impulsów wygenerowanych w PWM timera 2 (ma przerwanie co jeden impuls)
+		__HAL_TIM_SET_COUNTER(&htim2, 2000); //długość cyklu (licznik który określa nam jak długie są impulsy)
+
+		//Można zmienić COUNTER aby było wolniej szybciej (zmienia tylko czas), ale ogólnie tak jak jest to jest spoko
+
+		//zegar to 1000000 impulsów na sekundę (wartość 2000 w ustawieniach timera ma zwiazek z tym co tutaj w funkcji ustawiamy)
+		//licznik "ładujemy do 2000 i liczymy w dół
+		//2000 nie ustawione jest bez znaczenia
+		//w liczniku ustawiamy też wartosć 1000 i to ma zwiazek z przebiegiem (jak długie i o jakim wypełnieniu impulsy otrzymamy)
+
 	}
 }
 
@@ -99,6 +107,18 @@ void Pulse_Counter(void) //komentarz
   * @brief  The application entry point.
   * @retval int
   */
+
+
+/**
+ * Informacje wstępne
+ *
+ * przełożenie przekładni i=10
+ * mikrokroki 1/16
+ * na pełen obrót stołu nalezy wykonać 32000 mikrokroków
+ */
+
+
+
 int main(void)
 {
   /* USER CODE BEGIN 1 */
@@ -184,9 +204,9 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-    /* USER CODE END WHILE */
+	  /* USER CODE END WHILE */
 
-    /* USER CODE BEGIN 3 */
+	  /* USER CODE BEGIN 3 */
 
 	  uint32_t gesture, touch;
 	  airwheel_data_t airwheel;
@@ -196,7 +216,7 @@ int main(void)
 
 	  if(airwheel.new_data == FLICK_NEW_DATA)
 	  {
-	  	  BSP_LCD_Clear(LCD_COLOR_YELLOW);
+		  BSP_LCD_Clear(LCD_COLOR_YELLOW);
 		  BSP_LCD_DrawCircle(50, 110, 22);
 		  BSP_LCD_FillCircle(50, 110, 12);
 
@@ -219,7 +239,7 @@ int main(void)
 	  BSP_LCD_DisplayStringAtLine(3, (uint8_t *) str);
 
 	  if ((uint8_t) gesture == 2)
-		  HAL_GPIO_TogglePin(MOT_DIR1_GPIO_Port, MOT_DIR1_Pin);
+		  HAL_GPIO_TogglePin(MOT_DIR1_GPIO_Port, MOT_DIR1_Pin); //zmiana kierunku obrotu silnika na przeciwny_MW
 
 	  /* IMU */
 	  HAL_I2C_Mem_Read(&hi2c2, ACC_GYRO_ADDR, STATUS_REG, I2C_MEMADD_SIZE_8BIT, i2c2_buf, 1, 1);
@@ -243,15 +263,144 @@ int main(void)
 
 	  if (HAL_GPIO_ReadPin(B1_GPIO_Port, B1_Pin) == GPIO_PIN_RESET)
 	  {
-		  float cnt = (float)__HAL_TIM_GetCounter(&htim4) / 10;
+		  //		  float cnt = (float)__HAL_TIM_GetCounter(&htim4) / 10;
+		  //
+		  //		  uint8_t str[20];
+		  //		  sprintf((char*)str, "mot %.1f\r", cnt);
+		  //		  BSP_LCD_DisplayStringAtLine(5, (uint8_t *) str);
 
-		  uint8_t str[20];
-		  sprintf((char*)str, "mot %.1f\r", cnt);
-		  BSP_LCD_DisplayStringAtLine(5, (uint8_t *) str);
+		  pulse_cnt = 500;	//ilość impulsów o jaki silnik ma się poruszyć (ruch zależy od ustawień stepsticka)_MW
+		  HAL_TIM_PWM_Start_IT(&htim2, TIM_CHANNEL_2); //uruchomienie PWM czyli generowania impulsów i my tu nie zostajemy (kroki się wykonują.
+		  //To jest tylko utuchomienie timera z obsługą przerwania
+		  //Nie ma potrzeby się tu pokazywać dopóki te kroki się nie wykonają
 
-		  pulse_cnt = 500;
-		  HAL_TIM_PWM_Start_IT(&htim2, TIM_CHANNEL_2);
+		  //należy zadawać co jakiś czas określoną liczbę kroków i wmiedzy czasie odczytywać inne wartosci (zwolnić moc obliczeniową
+
+
 	  }
+
+
+
+
+
+
+
+
+	  //Wersja MW_V1
+
+
+	  _Bool tryb = 0; //ogólnie to użytkownik to będzie podawał po przez GUI
+	  double kat_start = 30; //ogólnie to użytkownik to będzie podawał po przez GUI
+	  double kat_obr = 60; //ogólnie to użytkownik to będzie podawał po przez GUI
+	  double czas = 120; //chyba nie będzie potrzebna ta zmienna bo wymagałaby zmiany wartości w liczniku tim2 (będziemy poruszać sie z stałą prędkością)
+	  double kat_obecny; //dane z funkci IMU
+
+
+
+	  //Dopytać sie czy w petli while nie dojdzie do zapętlenia się w nieskończoność (jak dział timer po zakończeniu odliczania)
+	  //zapytać się o interpretacje zliczania (czy jeśli damy więcej kroków niż 2000 to pytknie czy sie przepełni i zatrzyma?
+
+
+
+
+	  if(tryb == 0) //Wejście do trybu 0, poruszamy się z kierunka A do kierunku B
+	  {
+		  kat_obecny = FUNKCJA_IMU_DAJĄCA_OBECNY_KĄT; // odczytanie bieżącego kąta
+
+
+		  while((kat_start - 2) <= kat_obecny <= (kat_start + 2)) //ustawienie na pozycje startową
+		  {
+
+			  kat_obecny = FUNKCJA_IMU_DAJĄCA_OBECNY_KĄT;
+
+			  if(0 <= kat_obecny - kat_start)
+			  {
+				  //ustawić obroty w lewo
+				  pulse_cnt = (abs(kat_obecny - kat_start)) * 32000 / 360; //2000
+				  HAL_TIM_PWM_Start_IT(&htim2, TIM_CHANNEL_2);
+				  //dodać sprawdzenie czy użytkownik nie chce opuścić trybu 0
+
+			  }
+			  if(0 >= kat_obecny - kat_start)
+			  {
+				  //ustawić obroty w prawo
+				  pulse_cnt = (abs(kat_obecny - kat_start)) * 32000 / 360;
+				  HAL_TIM_PWM_Start_IT(&htim2, TIM_CHANNEL_2);
+				  //dodać sprawdzenie czy użytkownik nie chce opuścić trybu 0
+			  }
+
+			  //inne funkcje IMU np. do odczytu obecnego położenia
+
+		  }
+
+		  while((kat_start + kat_obr - 1) <= kat_obecny <= (kat_start + kat_obr + 1)) //przemieszczanie sie z kierunku A na kierunek B
+		  {
+
+			  kat_obecny = FUNKCJA_IMU_DAJĄCA_OBECNY_KĄT;
+
+			  if(kat_start < = kat_start + kat_obr)
+			  {
+				  //ustawić obroty w lewo
+				  pulse_cnt = (abs(kat_obr)) * 32000 / 360;
+				  HAL_TIM_PWM_Start_IT(&htim2, TIM_CHANNEL_2);
+				  //dodać sprawdzenie czy użytkownik nie chce opuścić trybu 0
+			  }
+
+			  if(kat_start < = kat_start + kat_obr)
+			  {
+				  //ustawić obroty w prawo
+				  pulse_cnt = (abs(kat_obr)) * 32000 / 360;
+				  HAL_TIM_PWM_Start_IT(&htim2, TIM_CHANNEL_2);
+				  //dodać sprawdzenie czy użytkownik nie chce opuścić trybu 0
+			  }
+
+			  //inne funkcje IMU np. do odczytu obecnego położenia
+
+		  }
+
+	  }
+
+
+	  if(tryb == 1)
+	  {
+		  while(warunek opusczenia) //podążanie za pozycją startową z stałą prędkością
+		  {
+
+			  kat_obecny = FUNKCJA_IMU_DAJĄCA_OBECNY_KĄT;
+
+			  if(0 <= kat_obecny - kat_start)
+			  {
+				  //ustawić obroty w lewo
+				  pulse_cnt = (abs(kat_obecny - kat_start)) * 32000 / 360;
+				  HAL_TIM_PWM_Start_IT(&htim2, TIM_CHANNEL_2);
+				  //dodać sprawdzenie czy użytkownik nie chce opuścić trybu 1
+			  }
+			  if(0 >= kat_obecny - kat_start)
+			  {
+				  //ustawić obroty w prawo
+				  pulse_cnt = (abs(kat_obecny - kat_start)) * 32000 / 360;
+				  HAL_TIM_PWM_Start_IT(&htim2, TIM_CHANNEL_2);
+				  //dodać sprawdzenie czy użytkownik nie chce opuścić trybu 1
+			  }
+
+			  //inne funkcje IMU np. do odczytu obecnego położenia
+
+		  }
+
+	  }
+
+
+
+
+
+
+
+
+
+
+
+
+
   }
   /* USER CODE END 3 */
 }
