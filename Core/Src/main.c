@@ -95,10 +95,15 @@ void Pulse_Counter(void) //komentarz
 
 /* USER CODE END 0 */
 
+
 /**
-  * @brief  The application entry point.
-  * @retval int
-  */
+ * Informacje wstępne
+ *
+ * przełożenie przekładni i=10
+ * mikrokroki 1/16
+ * na pełen obrót stołu nalezy wykonać 32000 mikrokroków
+ */
+
 int main(void)
 {
   /* USER CODE BEGIN 1 */
