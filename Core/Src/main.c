@@ -1,22 +1,22 @@
 /* USER CODE BEGIN Header */
 /**
-  ******************************************************************************
-  * @file           : main.c
-  * @brief          : STM32L476 Nucleo-64 Workbench Tests @ WUT Mchtr
-  ******************************************************************************
-  * @attention
-  *
-  * Copyright (c) 2020 STMicroelectronics.<br>
-  * Copyright (c) 2021 Mateusz Szumilas @ WUT Faculty of Mechatronics.<br>
-  * All rights reserved.
-  *
-  * This software component is licensed under BSD 3-Clause license,
-  * the "License"; You may not use this file except in compliance with the
-  * License. You may obtain a copy of the License at:
-  *                        opensource.org/licenses/BSD-3-Clause
-  *
-  ******************************************************************************
-  */
+ ******************************************************************************
+ * @file           : main.c
+ * @brief          : STM32L476 Nucleo-64 Workbench Tests @ WUT Mchtr
+ ******************************************************************************
+ * @attention
+ *
+ * Copyright (c) 2020 STMicroelectronics.<br>
+ * Copyright (c) 2021 Mateusz Szumilas @ WUT Faculty of Mechatronics.<br>
+ * All rights reserved.
+ *
+ * This software component is licensed under BSD 3-Clause license,
+ * the "License"; You may not use this file except in compliance with the
+ * License. You may obtain a copy of the License at:
+ *                        opensource.org/licenses/BSD-3-Clause
+ *
+ ******************************************************************************
+ */
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
@@ -94,7 +94,9 @@ void Pulse_Counter(void) //proces do zliczania impulsów
 		//Można zmienić COUNTER aby było wolniej szybciej (zmienia tylko czas), ale ogólnie tak jak jest to jest spoko
 
 		//zegar to 1000000 impulsów na sekundę (wartość 2000 w ustawieniach timera ma zwiazek z tym co tutaj w funkcji ustawiamy)
-		//licznik "ładujemy do 2000 i liczymy w dół
+
+		//licznik "ładujemy do 2000 impulsów i liczymy w dół => 2000*1/1000000s = 0,002 s
+
 		//2000 nie ustawione jest bez znaczenia
 		//w liczniku ustawiamy też wartosć 1000 i to ma zwiazek z przebiegiem (jak długie i o jakim wypełnieniu impulsy otrzymamy)
 
@@ -151,134 +153,136 @@ int main(void)
   MX_I2C2_Init();
   /* USER CODE BEGIN 2 */
 
-  /* Stepstick */
-  HAL_TIM_Base_Start(&htim4);
+	/* Stepstick */
+	HAL_TIM_Base_Start(&htim4);
 
-  HAL_GPIO_WritePin(MOT_RESET_GPIO_Port, MOT_RESET_Pin, GPIO_PIN_RESET);
-  HAL_GPIO_WritePin(MOT_MODE1_GPIO_Port, MOT_MODE1_Pin, GPIO_PIN_RESET);
-  HAL_GPIO_WritePin(MOT_MODE2_GPIO_Port, MOT_MODE2_Pin, GPIO_PIN_SET);
-  HAL_GPIO_WritePin(MOT_RESET_GPIO_Port, MOT_RESET_Pin, GPIO_PIN_SET);
+	HAL_GPIO_WritePin(MOT_RESET_GPIO_Port, MOT_RESET_Pin, GPIO_PIN_RESET);
+	HAL_GPIO_WritePin(MOT_MODE1_GPIO_Port, MOT_MODE1_Pin, GPIO_PIN_RESET);
+	HAL_GPIO_WritePin(MOT_MODE2_GPIO_Port, MOT_MODE2_Pin, GPIO_PIN_SET);
+	HAL_GPIO_WritePin(MOT_RESET_GPIO_Port, MOT_RESET_Pin, GPIO_PIN_SET);
 
-  /* LCD */
-  BSP_LCD_Init();
-  BSP_LCD_DisplayOn();
+	/* LCD */
+	BSP_LCD_Init();
+	BSP_LCD_DisplayOn();
 
-  BSP_LCD_DisplayStringAtLine(2, (uint8_t *) "testTestTest");
+	BSP_LCD_DisplayStringAtLine(2, (uint8_t *) "testTestTest");
 
-  BSP_LCD_Clear(LCD_COLOR_YELLOW);
+	BSP_LCD_Clear(LCD_COLOR_YELLOW);
 
-  BSP_LCD_DisplayStringAtLine(3, (uint8_t *) "test");
+	BSP_LCD_DisplayStringAtLine(3, (uint8_t *) "test");
 
-  /* Sensors */
-  HAL_I2C_Init(&hi2c1);
-  HAL_I2C_Init(&hi2c2);
+	/* Sensors */
+	HAL_I2C_Init(&hi2c1);
+	HAL_I2C_Init(&hi2c2);
 
-  /* Flick */
-  flick_reset();
-  flick_set_param(0x90, 0x20, 0x20);
+	/* Flick */
+	flick_reset();
+	flick_set_param(0x90, 0x20, 0x20);
 
-  /* IMU */
-  uint8_t i2c2_buf[10];
-  HAL_I2C_Mem_Read(&hi2c2, ACC_GYRO_ADDR, WHO_AM_I, I2C_MEMADD_SIZE_8BIT, i2c2_buf, 1, 1);
-  HAL_I2C_Mem_Read(&hi2c2, 0x1e<<1, 0x0f, I2C_MEMADD_SIZE_8BIT, i2c2_buf+1, 1, 1);
+	/* IMU */
+	uint8_t i2c2_buf[10];
+	HAL_I2C_Mem_Read(&hi2c2, ACC_GYRO_ADDR, WHO_AM_I, I2C_MEMADD_SIZE_8BIT, i2c2_buf, 1, 1);
+	HAL_I2C_Mem_Read(&hi2c2, 0x1e<<1, 0x0f, I2C_MEMADD_SIZE_8BIT, i2c2_buf+1, 1, 1);
 
-  char str[40];
-  sprintf(str, "Who? A/G:%02x M:%02x", i2c2_buf[0], i2c2_buf[1]);
-  BSP_LCD_DisplayStringAtLine(10, (uint8_t *) str);
+	char str[40];
+	sprintf(str, "Who? A/G:%02x M:%02x", i2c2_buf[0], i2c2_buf[1]);
+	BSP_LCD_DisplayStringAtLine(10, (uint8_t *) str);
 
-  /* cfg gyro */
-  i2c2_buf[0] = 0x38;		// enable X,Y,Z axes
-  HAL_I2C_Mem_Write(&hi2c2, ACC_GYRO_ADDR, CTRL10_C, I2C_MEMADD_SIZE_8BIT, i2c2_buf, 1, 1);
-  i2c2_buf[0] = 0x14;		// 13 Hz ODR, 500 dps
-  HAL_I2C_Mem_Write(&hi2c2, ACC_GYRO_ADDR, CTRL2_G, I2C_MEMADD_SIZE_8BIT, i2c2_buf, 1, 1);
+	/* cfg gyro */
+	i2c2_buf[0] = 0x38;		// enable X,Y,Z axes
+	HAL_I2C_Mem_Write(&hi2c2, ACC_GYRO_ADDR, CTRL10_C, I2C_MEMADD_SIZE_8BIT, i2c2_buf, 1, 1);
+	i2c2_buf[0] = 0x14;		// 13 Hz ODR, 500 dps
+	HAL_I2C_Mem_Write(&hi2c2, ACC_GYRO_ADDR, CTRL2_G, I2C_MEMADD_SIZE_8BIT, i2c2_buf, 1, 1);
 
-  // cfg acc
-  i2c2_buf[0] = 0x38;		// enable X,Y,Z axes
-  HAL_I2C_Mem_Write(&hi2c2, ACC_GYRO_ADDR, CTRL9_XL, I2C_MEMADD_SIZE_8BIT, i2c2_buf, 1, 1);
-  i2c2_buf[0] = 0x10;		// 13 Hz ODR, +/- 2 g
-  HAL_I2C_Mem_Write(&hi2c2, ACC_GYRO_ADDR, CTRL1_XL, I2C_MEMADD_SIZE_8BIT, i2c2_buf, 1, 1);
+	// cfg acc
+	i2c2_buf[0] = 0x38;		// enable X,Y,Z axes
+	HAL_I2C_Mem_Write(&hi2c2, ACC_GYRO_ADDR, CTRL9_XL, I2C_MEMADD_SIZE_8BIT, i2c2_buf, 1, 1);
+	i2c2_buf[0] = 0x10;		// 13 Hz ODR, +/- 2 g
+	HAL_I2C_Mem_Write(&hi2c2, ACC_GYRO_ADDR, CTRL1_XL, I2C_MEMADD_SIZE_8BIT, i2c2_buf, 1, 1);
 
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-  while (1)
-  {
-	  /* USER CODE END WHILE */
+
+	while (1)
+	{
+    /* USER CODE END WHILE */
+
 
 	  /* USER CODE BEGIN 3 */
 
-	  uint32_t gesture, touch;
-	  airwheel_data_t airwheel;
-	  char str[20];
 
-	  flick_poll_data(&gesture, &touch, &airwheel);
+		uint32_t gesture, touch;
+		airwheel_data_t airwheel;
+		char str[20];
 
-	  if(airwheel.new_data == FLICK_NEW_DATA)
-	  {
-		  BSP_LCD_Clear(LCD_COLOR_YELLOW);
-		  BSP_LCD_DrawCircle(50, 110, 22);
-		  BSP_LCD_FillCircle(50, 110, 12);
+		flick_poll_data(&gesture, &touch, &airwheel);
 
-		  sprintf(str, "pos: %02d cnt: %02d", airwheel.position, airwheel.count);
-		  BSP_LCD_DisplayStringAtLine(4, (uint8_t *) str);
+		if(airwheel.new_data == FLICK_NEW_DATA)
+		{
+			BSP_LCD_Clear(LCD_COLOR_YELLOW);
+			BSP_LCD_DrawCircle(50, 110, 22);
+			BSP_LCD_FillCircle(50, 110, 12);
 
-		  uint8_t circy = 110 - 12 * sin(2*3.1416*airwheel.position/32);
-		  uint8_t circx = 50 - 12 * cos(2*3.1416*airwheel.position/32);
+			sprintf(str, "pos: %02d cnt: %02d", airwheel.position, airwheel.count);
+			BSP_LCD_DisplayStringAtLine(4, (uint8_t *) str);
 
-		  BSP_LCD_FillCircle(circx, circy, 3);
+			uint8_t circy = 110 - 12 * sin(2*3.1416*airwheel.position/32);
+			uint8_t circx = 50 - 12 * cos(2*3.1416*airwheel.position/32);
 
-		  airwheel.new_data = FLICK_NO_DATA;
-	  }
+			BSP_LCD_FillCircle(circx, circy, 3);
 
-	  sprintf(str, "g:%lx             ", gesture);
-	  BSP_LCD_DisplayStringAtLine(1, (uint8_t *) str);
-	  sprintf(str, "gest:%d           ", (uint8_t) gesture);
-	  BSP_LCD_DisplayStringAtLine(2, (uint8_t *) str);
-	  sprintf(str, "t:%lx             ", touch);
-	  BSP_LCD_DisplayStringAtLine(3, (uint8_t *) str);
+			airwheel.new_data = FLICK_NO_DATA;
+		}
 
-	  if ((uint8_t) gesture == 2)
-		  HAL_GPIO_TogglePin(MOT_DIR1_GPIO_Port, MOT_DIR1_Pin); //zmiana kierunku obrotu silnika na przeciwny_MW
+		sprintf(str, "g:%lx             ", gesture);
+		BSP_LCD_DisplayStringAtLine(1, (uint8_t *) str);
+		sprintf(str, "gest:%d           ", (uint8_t) gesture);
+		BSP_LCD_DisplayStringAtLine(2, (uint8_t *) str);
+		sprintf(str, "t:%lx             ", touch);
+		BSP_LCD_DisplayStringAtLine(3, (uint8_t *) str);
 
-	  /* IMU */
-	  HAL_I2C_Mem_Read(&hi2c2, ACC_GYRO_ADDR, STATUS_REG, I2C_MEMADD_SIZE_8BIT, i2c2_buf, 1, 1);
-	  uint8_t tmp_stat = i2c2_buf[0];
-	  if (tmp_stat & SR_XLDA)
-	  {
-		  HAL_I2C_Mem_Read(&hi2c2, ACC_GYRO_ADDR, OUTX_L_XL, I2C_MEMADD_SIZE_8BIT, i2c2_buf, 6, 1);
-		  sprintf(str, "acc %+4hi%+4hi%+4hi",
-				  (int8_t)*(i2c2_buf+1), (int8_t)*(i2c2_buf+3), (int8_t)*(i2c2_buf+5));
-		  BSP_LCD_DisplayStringAtLine(12, (uint8_t *) str);
-	  }
-	  if (tmp_stat & SR_GDA)
-	  {
-		  HAL_I2C_Mem_Read(&hi2c2, ACC_GYRO_ADDR, OUTX_L_G, I2C_MEMADD_SIZE_8BIT, i2c2_buf, 6, 1);
-		  sprintf(str, "gyro %+4hi%+4hi%+4hi",
-				  (int8_t)*(i2c2_buf+1), (int8_t)*(i2c2_buf+3), (int8_t)*(i2c2_buf+5));
-		  BSP_LCD_DisplayStringAtLine(11, (uint8_t *) str);
-	  }
+		if ((uint8_t) gesture == 2)
+			HAL_GPIO_TogglePin(MOT_DIR1_GPIO_Port, MOT_DIR1_Pin); //zmiana kierunku obrotu silnika na przeciwny_MW
 
-	  HAL_Delay(100);
+		/* IMU */
+		HAL_I2C_Mem_Read(&hi2c2, ACC_GYRO_ADDR, STATUS_REG, I2C_MEMADD_SIZE_8BIT, i2c2_buf, 1, 1);
+		uint8_t tmp_stat = i2c2_buf[0];
+		if (tmp_stat & SR_XLDA)
+		{
+			HAL_I2C_Mem_Read(&hi2c2, ACC_GYRO_ADDR, OUTX_L_XL, I2C_MEMADD_SIZE_8BIT, i2c2_buf, 6, 1);
+			sprintf(str, "acc %+4hi%+4hi%+4hi",
+					(int8_t)*(i2c2_buf+1), (int8_t)*(i2c2_buf+3), (int8_t)*(i2c2_buf+5));
+			BSP_LCD_DisplayStringAtLine(12, (uint8_t *) str);
+		}
+		if (tmp_stat & SR_GDA)
+		{
+			HAL_I2C_Mem_Read(&hi2c2, ACC_GYRO_ADDR, OUTX_L_G, I2C_MEMADD_SIZE_8BIT, i2c2_buf, 6, 1);
+			sprintf(str, "gyro %+4hi%+4hi%+4hi",
+					(int8_t)*(i2c2_buf+1), (int8_t)*(i2c2_buf+3), (int8_t)*(i2c2_buf+5));
+			BSP_LCD_DisplayStringAtLine(11, (uint8_t *) str);
+		}
 
-	  if (HAL_GPIO_ReadPin(B1_GPIO_Port, B1_Pin) == GPIO_PIN_RESET)
-	  {
-		  //		  float cnt = (float)__HAL_TIM_GetCounter(&htim4) / 10;
-		  //
-		  //		  uint8_t str[20];
-		  //		  sprintf((char*)str, "mot %.1f\r", cnt);
-		  //		  BSP_LCD_DisplayStringAtLine(5, (uint8_t *) str);
+		HAL_Delay(100);
 
-		  pulse_cnt = 500;	//ilość impulsów o jaki silnik ma się poruszyć (ruch zależy od ustawień stepsticka)_MW
-		  HAL_TIM_PWM_Start_IT(&htim2, TIM_CHANNEL_2); //uruchomienie PWM czyli generowania impulsów i my tu nie zostajemy (kroki się wykonują.
-		  //To jest tylko utuchomienie timera z obsługą przerwania
-		  //Nie ma potrzeby się tu pokazywać dopóki te kroki się nie wykonają
+		if (HAL_GPIO_ReadPin(B1_GPIO_Port, B1_Pin) == GPIO_PIN_RESET)
+		{
+			//		  float cnt = (float)__HAL_TIM_GetCounter(&htim4) / 10;
+			//
+			//		  uint8_t str[20];
+			//		  sprintf((char*)str, "mot %.1f\r", cnt);
+			//		  BSP_LCD_DisplayStringAtLine(5, (uint8_t *) str);
 
-		  //należy zadawać co jakiś czas określoną liczbę kroków i wmiedzy czasie odczytywać inne wartosci (zwolnić moc obliczeniową
+			pulse_cnt = 500;	//ilość impulsów o jaki silnik ma się poruszyć (ruch zależy od ustawień stepsticka)_MW
+			HAL_TIM_PWM_Start_IT(&htim2, TIM_CHANNEL_2); //uruchomienie PWM czyli generowania impulsów i my tu nie zostajemy (kroki się wykonują.
+			//To jest tylko utuchomienie timera z obsługą przerwania
+			//Nie ma potrzeby się tu pokazywać dopóki te kroki się nie wykonają
 
+			//należy zadawać co jakiś czas określoną liczbę kroków i wmiedzy czasie odczytywać inne wartosci (zwolnić moc obliczeniową
 
-	  }
 
+		}
 
 
 
@@ -286,122 +290,112 @@ int main(void)
 
 
 
-	  //Wersja MW_V1
 
 
-	  _Bool tryb = 0; //ogólnie to użytkownik to będzie podawał po przez GUI
-	  double kat_start = 30; //ogólnie to użytkownik to będzie podawał po przez GUI
-	  double kat_obr = 60; //ogólnie to użytkownik to będzie podawał po przez GUI
-	  double czas = 120; //chyba nie będzie potrzebna ta zmienna bo wymagałaby zmiany wartości w liczniku tim2 (będziemy poruszać sie z stałą prędkością)
-	  double kat_obecny; //dane z funkci IMU
+		_Bool tryb = 0; //ogólnie to użytkownik to będzie podawał poprzez GUI
+		double kat_start = 30; //ogólnie to użytkownik to będzie podawał poprzez GUI
+		double kat_obr = 60; //ogólnie to użytkownik to będzie podawał poprzez GUI
+		double czas = 120; //chyba nie będzie potrzebna ta zmienna bo wymagałaby zmiany wartości w liczniku tim2 (będziemy poruszać sie z stałą prędkością)
+		double kat_obecny; //dane z funkci IMU
+		HAL_GPIO_WritePin(GPIOA, MOT_WARUNEK_OPUSZCZENIA, GPIO_PIN_RESET);
 
 
 
-	  //Dopytać sie czy w petli while nie dojdzie do zapętlenia się w nieskończoność (jak dział timer po zakończeniu odliczania)
-	  //zapytać się o interpretacje zliczania (czy jeśli damy więcej kroków niż 2000 to pytknie czy sie przepełni i zatrzyma?
 
+		if(tryb == 0) //Wejście do trybu 0, poruszamy się z kierunka A do kierunku B
+		{
 
+			euler();
+			kat_obecny = eulerAngles[2] * 180 / 3,14; //odczytanie bieżącego kąta, GUI pobira tą wartość
 
 
-	  if(tryb == 0) //Wejście do trybu 0, poruszamy się z kierunka A do kierunku B
-	  {
-		  kat_obecny = FUNKCJA_IMU_DAJĄCA_OBECNY_KĄT; // odczytanie bieżącego kąta
+			while((kat_start - 2) <= kat_obecny && kat_obecny <= (kat_start + 2)) //ustawienie na pozycje startową
+			{
 
+				euler();
+				kat_obecny = eulerAngles[2] * 180 / 3,14; //odczytanie bieżącego kąta, GUI pobira tą wartość
 
-		  while((kat_start - 2) <= kat_obecny <= (kat_start + 2)) //ustawienie na pozycje startową
-		  {
+				if(0 <= (kat_obecny - kat_start))
+				{
 
-			  kat_obecny = FUNKCJA_IMU_DAJĄCA_OBECNY_KĄT;
+					HAL_GPIO_WritePin(GPIOA, MOT_DIR1_Pin, GPIO_PIN_SET); //ustawienie obrotów w lewo
+					pulse_cnt = (abs(kat_obecny - kat_start)) * 32000 / 360; //2000
+					HAL_TIM_PWM_Start_IT(&htim2, TIM_CHANNEL_2);
 
-			  if(0 <= kat_obecny - kat_start)
-			  {
-				  //ustawić obroty w lewo
-				  pulse_cnt = (abs(kat_obecny - kat_start)) * 32000 / 360; //2000
-				  HAL_TIM_PWM_Start_IT(&htim2, TIM_CHANNEL_2);
-				  //dodać sprawdzenie czy użytkownik nie chce opuścić trybu 0
+				}
+				if(0 >= (kat_obecny - kat_start))
+				{
+					HAL_GPIO_WritePin(GPIOA, MOT_DIR1_Pin, GPIO_PIN_RESET); //ustawienie obrotów w prawo
+					pulse_cnt = (abs(kat_obecny - kat_start)) * 32000 / 360;
+					HAL_TIM_PWM_Start_IT(&htim2, TIM_CHANNEL_2);
+				}
 
-			  }
-			  if(0 >= kat_obecny - kat_start)
-			  {
-				  //ustawić obroty w prawo
-				  pulse_cnt = (abs(kat_obecny - kat_start)) * 32000 / 360;
-				  HAL_TIM_PWM_Start_IT(&htim2, TIM_CHANNEL_2);
-				  //dodać sprawdzenie czy użytkownik nie chce opuścić trybu 0
-			  }
 
-			  //inne funkcje IMU np. do odczytu obecnego położenia
+			}
 
-		  }
+			while((kat_start + kat_obr - 1) <= kat_obecny && kat_obecny <= (kat_start + kat_obr + 1)) //przemieszczanie sie z kierunku A na kierunek B
+			{
 
-		  while((kat_start + kat_obr - 1) <= kat_obecny <= (kat_start + kat_obr + 1)) //przemieszczanie sie z kierunku A na kierunek B
-		  {
+				euler();
+				kat_obecny = eulerAngles[2] * 180 / 3,14; //odczytanie bieżącego kąta, GUI pobira tą wartość
 
-			  kat_obecny = FUNKCJA_IMU_DAJĄCA_OBECNY_KĄT;
+				if(kat_start <= (kat_start + kat_obr))
+				{
+					HAL_GPIO_WritePin(GPIOA, MOT_DIR1_Pin, GPIO_PIN_SET); //ustawienie obrotów w lewo
+					pulse_cnt = (abs(kat_obr)) * 32000 / 360;
+					HAL_TIM_PWM_Start_IT(&htim2, TIM_CHANNEL_2);
+				}
 
-			  if(kat_start < = kat_start + kat_obr)
-			  {
-				  //ustawić obroty w lewo
-				  pulse_cnt = (abs(kat_obr)) * 32000 / 360;
-				  HAL_TIM_PWM_Start_IT(&htim2, TIM_CHANNEL_2);
-				  //dodać sprawdzenie czy użytkownik nie chce opuścić trybu 0
-			  }
+				if(kat_start <= (kat_start + kat_obr))
+				{
+					HAL_GPIO_WritePin(GPIOA, MOT_DIR1_Pin, GPIO_PIN_RESET); //ustawienie obrotów w prawo
+					pulse_cnt = (abs(kat_obr)) * 32000 / 360;
+					HAL_TIM_PWM_Start_IT(&htim2, TIM_CHANNEL_2);
+				}
 
-			  if(kat_start < = kat_start + kat_obr)
-			  {
-				  //ustawić obroty w prawo
-				  pulse_cnt = (abs(kat_obr)) * 32000 / 360;
-				  HAL_TIM_PWM_Start_IT(&htim2, TIM_CHANNEL_2);
-				  //dodać sprawdzenie czy użytkownik nie chce opuścić trybu 0
-			  }
 
-			  //inne funkcje IMU np. do odczytu obecnego położenia
+			}
 
-		  }
+		}
 
-	  }
 
+		if(tryb == 1)
+		{
+			while(MOT_WARUNEK_OPUSZCZENIA == 1) //podążanie za pozycją startową z stałą prędkością
+			{
 
-	  if(tryb == 1)
-	  {
-		  while(warunek opusczenia) //podążanie za pozycją startową z stałą prędkością
-		  {
+				euler();
+				kat_obecny = eulerAngles[2] * 180 / 3,14; //odczytanie bieżącego kąta, GUI pobira tą wartość
 
-			  kat_obecny = FUNKCJA_IMU_DAJĄCA_OBECNY_KĄT;
+				if(0 <= kat_obecny - kat_start)
+				{
+					HAL_GPIO_WritePin(GPIOA, MOT_DIR1_Pin, GPIO_PIN_SET); //ustawienie obrotów w lewo
+					pulse_cnt = (abs(kat_obecny - kat_start)) * 32000 / 360;
+					HAL_TIM_PWM_Start_IT(&htim2, TIM_CHANNEL_2);
+					//dodać sprawdzenie czy użytkownik nie chce opuścić trybu 1
+				}
+				if(0 >= kat_obecny - kat_start)
+				{
+					HAL_GPIO_WritePin(GPIOA, MOT_DIR1_Pin, GPIO_PIN_RESET); //ustawienie obrotów w prawo
+					pulse_cnt = (abs(kat_obecny - kat_start)) * 32000 / 360;
+					HAL_TIM_PWM_Start_IT(&htim2, TIM_CHANNEL_2);
+					//dodać sprawdzenie czy użytkownik nie chce opuścić trybu 1
+				}
 
-			  if(0 <= kat_obecny - kat_start)
-			  {
-				  //ustawić obroty w lewo
-				  pulse_cnt = (abs(kat_obecny - kat_start)) * 32000 / 360;
-				  HAL_TIM_PWM_Start_IT(&htim2, TIM_CHANNEL_2);
-				  //dodać sprawdzenie czy użytkownik nie chce opuścić trybu 1
-			  }
-			  if(0 >= kat_obecny - kat_start)
-			  {
-				  //ustawić obroty w prawo
-				  pulse_cnt = (abs(kat_obecny - kat_start)) * 32000 / 360;
-				  HAL_TIM_PWM_Start_IT(&htim2, TIM_CHANNEL_2);
-				  //dodać sprawdzenie czy użytkownik nie chce opuścić trybu 1
-			  }
+//				if(sprawdzenie czy opuścić funkcje od flicka)
+//				{
+//					HAL_GPIO_WritePin(GPIOA, MOT_WARUNEK_OPUSZCZENIA, GPIO_PIN_SET);
+//				}
 
-			  //inne funkcje IMU np. do odczytu obecnego położenia
 
-		  }
+			}
 
-	  }
+		}
 
 
 
 
 
-
-
-
-
-
-
-
-
-  }
   /* USER CODE END 3 */
 }
 
@@ -762,7 +756,7 @@ static void MX_GPIO_Init(void)
                           |FLICK_RESET_Pin|MOT_REF_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOA, LD2_Pin|MOT_DIR1_Pin|MOT_RESET_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOA, LD2_Pin|MOT_DIR1_Pin|MOT_RESET_Pin|MOT_WARUNEK_OPUSZCZENIA_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOB, MOT_MODE1_Pin|MOT_MODE2_Pin, GPIO_PIN_RESET);
@@ -787,8 +781,8 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
   HAL_GPIO_Init(LCD_RST_GPIO_Port, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : LD2_Pin MOT_DIR1_Pin MOT_RESET_Pin */
-  GPIO_InitStruct.Pin = LD2_Pin|MOT_DIR1_Pin|MOT_RESET_Pin;
+  /*Configure GPIO pins : LD2_Pin MOT_DIR1_Pin MOT_RESET_Pin MOT_WARUNEK_OPUSZCZENIA_Pin */
+  GPIO_InitStruct.Pin = LD2_Pin|MOT_DIR1_Pin|MOT_RESET_Pin|MOT_WARUNEK_OPUSZCZENIA_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
@@ -834,7 +828,7 @@ static void MX_GPIO_Init(void)
 void Error_Handler(void)
 {
   /* USER CODE BEGIN Error_Handler_Debug */
-  /* User can add his own implementation to report the HAL error return state */
+	/* User can add his own implementation to report the HAL error return state */
 
   /* USER CODE END Error_Handler_Debug */
 }
@@ -850,7 +844,7 @@ void Error_Handler(void)
 void assert_failed(uint8_t *file, uint32_t line)
 {
   /* USER CODE BEGIN 6 */
-  /* User can add his own implementation to report the file name and line number,
+	/* User can add his own implementation to report the file name and line number,
      tex: printf("Wrong parameters value: file %s on line %d\r\n", file, line) */
   /* USER CODE END 6 */
 }
