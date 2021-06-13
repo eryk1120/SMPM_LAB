@@ -28,6 +28,7 @@
 #include "stm32_adafruit_lcd.h"
 #include "flick.h"
 #include "lsm6ds33_reg.h"
+#include "lis3_reg.h"
 #include "math.h"
 /* USER CODE END Includes */
 
@@ -82,7 +83,6 @@ static void MX_I2C2_Init(void);
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 
-
 void Pulse_Counter(void)
 {
 	if (pulse_cnt > 0) pulse_cnt--;
@@ -91,6 +91,94 @@ void Pulse_Counter(void)
 		HAL_TIM_PWM_Stop_IT(&htim2, TIM_CHANNEL_2);
 		__HAL_TIM_SET_COUNTER(&htim2, 2000);
 	}
+}
+
+
+void init_IMU()
+{
+		uint8_t i2c2_buf[10];
+		HAL_I2C_Mem_Read(&hi2c2, ACC_GYRO_ADDR, WHO_AM_I, I2C_MEMADD_SIZE_8BIT, i2c2_buf, 1, 1);
+		HAL_I2C_Mem_Read(&hi2c2, 0x1e << 1, 0x0f, I2C_MEMADD_SIZE_8BIT, i2c2_buf + 1, 1, 1);
+
+		char str[40];
+		sprintf(str, "Who? A/G:%02x M:%02x", i2c2_buf[0], i2c2_buf[1]);
+		BSP_LCD_DisplayStringAtLine(10, (uint8_t*)str);
+
+		// cfg gyroscope
+		i2c2_buf[0] = 0x38;		// enable X,Y,Z axes
+		HAL_I2C_Mem_Write(&hi2c2, ACC_GYRO_ADDR, CTRL10_C, I2C_MEMADD_SIZE_8BIT, i2c2_buf, 1, 1);
+
+		i2c2_buf[0] = 0x14;		// 13 Hz ODR, 500 dps
+		HAL_I2C_Mem_Write(&hi2c2, ACC_GYRO_ADDR, CTRL2_G, I2C_MEMADD_SIZE_8BIT, i2c2_buf, 1, 1);
+
+		// cfg accelerometr
+		i2c2_buf[0] = 0x38;		// enable X,Y,Z axes interrupt
+		HAL_I2C_Mem_Write(&hi2c2, ACC_GYRO_ADDR, CTRL9_XL, I2C_MEMADD_SIZE_8BIT, i2c2_buf, 1, 1);
+
+		i2c2_buf[0] = 0x10;		// 13 Hz ODR, +/- 2 g
+		HAL_I2C_Mem_Write(&hi2c2, ACC_GYRO_ADDR, CTRL1_XL, I2C_MEMADD_SIZE_8BIT, i2c2_buf, 1, 1);
+
+		// cfg magnetometr
+		i2c2_buf[0] = 0xE0;     //11100000,   enable interrupt generation on X,Y,Z
+		HAL_I2C_Mem_Write(&hi2c2, MAG_ADDR, INT_CFG, I2C_MEMADD_SIZE_8BIT, i2c2_buf,1, 1);
+
+		i2c2_buf[0] = 0x71;    //  01110001, czestotliwosc 10 Hz,  High-power mode, temp disable,
+		HAL_I2C_Mem_Write(&hi2c2, MAG_ADDR, CTRL_REG1, I2C_MEMADD_SIZE_8BIT,i2c2_buf, 1, 1);
+
+		i2c2_buf[0] = 0x00;         //00000000 zakres pomiarowy +-4 gauss
+		HAL_I2C_Mem_Write(&hi2c2, MAG_ADDR, CTRL_REG2, I2C_MEMADD_SIZE_8BIT,i2c2_buf, 1, 1);
+
+		i2c2_buf[0] = 0x00;         //00000000 Low-power mode, Continuous-conversion mode,
+		HAL_I2C_Mem_Write(&hi2c2, MAG_ADDR, CTRL_REG3, I2C_MEMADD_SIZE_8BIT,i2c2_buf, 1, 1);
+}
+
+int8_t odczyt[9] = { 0 };
+
+void wczytywanie_IMU()
+{
+		//char str[40];
+		uint8_t i2c2_buf[10];
+
+		  HAL_I2C_Mem_Read(&hi2c2, ACC_GYRO_ADDR, STATUS_REG, I2C_MEMADD_SIZE_8BIT, i2c2_buf, 1, 1);
+		  uint8_t tmp_stat_acc = i2c2_buf[0];
+
+		  if (tmp_stat_acc & SR_XLDA) // dostępne nowe dane akcelerometr
+		  {
+			  HAL_I2C_Mem_Read(&hi2c2, ACC_GYRO_ADDR, OUTX_L_XL, I2C_MEMADD_SIZE_8BIT, i2c2_buf, 6, 1);
+			//  sprintf(str, "acc %+4hi%+4hi%+4hi",
+			//		  (int8_t)*(i2c2_buf+1), (int8_t)*(i2c2_buf+3), (int8_t)*(i2c2_buf+5));
+			// BSP_LCD_DisplayStringAtLine(12, (uint8_t *) str);
+
+			   odczyt[0] = i2c2_buf[1];
+			   odczyt[1] = i2c2_buf[3];
+			   odczyt[2] = i2c2_buf[5];
+		  }
+
+		  if (tmp_stat_acc & SR_GDA) // dostępne nowe dane gyroscope
+		  {
+			  HAL_I2C_Mem_Read(&hi2c2, ACC_GYRO_ADDR, OUTX_L_G, I2C_MEMADD_SIZE_8BIT, i2c2_buf, 6, 1);
+			//  sprintf(str, "gyro %+4hi%+4hi%+4hi",
+			//		  (int8_t)*(i2c2_buf+1), (int8_t)*(i2c2_buf+3), (int8_t)*(i2c2_buf+5));
+			//  BSP_LCD_DisplayStringAtLine(11, (uint8_t *) str);
+			   odczyt[3] = i2c2_buf[1];
+			   odczyt[4] = i2c2_buf[3];
+			   odczyt[5] = i2c2_buf[5];
+		  }
+
+		  HAL_I2C_Mem_Read(&hi2c2, MAG_ADDR, STATUS_REG_mag, I2C_MEMADD_SIZE_8BIT, i2c2_buf + 1, 1, 1);
+		  uint8_t tmp_stat_mag = i2c2_buf[1];
+
+		  if (tmp_stat_mag & SR_ZYXDA) // dostępne nowe dane magnetometr
+		  {
+			  HAL_I2C_Mem_Read(&hi2c2, MAG_ADDR, OUT_X_L, I2C_MEMADD_SIZE_8BIT, i2c2_buf, 6, 1);
+			//  sprintf(str, "mag %+4hi%+4hi%+4hi",
+			//	  (int8_t) * (i2c2_buf + 1), (int8_t) * (i2c2_buf + 3), (int8_t) * (i2c2_buf + 5));
+			//  BSP_LCD_DisplayStringAtLine(11, (uint8_t *) str);
+
+			   odczyt[6] = i2c2_buf[1];
+			   odczyt[7] = i2c2_buf[3];
+			   odczyt[8] = i2c2_buf[5];
+		  }
 }
 
 /* USER CODE END 0 */
@@ -158,25 +246,7 @@ int main(void)
   flick_set_param(0x90, 0x20, 0x20);
 
   /* IMU */
-  uint8_t i2c2_buf[10];
-  HAL_I2C_Mem_Read(&hi2c2, ACC_GYRO_ADDR, WHO_AM_I, I2C_MEMADD_SIZE_8BIT, i2c2_buf, 1, 1);
-  HAL_I2C_Mem_Read(&hi2c2, 0x1e<<1, 0x0f, I2C_MEMADD_SIZE_8BIT, i2c2_buf+1, 1, 1);
-
-  char str[40];
-  sprintf(str, "Who? A/G:%02x M:%02x", i2c2_buf[0], i2c2_buf[1]);
-  BSP_LCD_DisplayStringAtLine(10, (uint8_t *) str);
-
-  /* cfg gyro */
-  i2c2_buf[0] = 0x38;		// enable X,Y,Z axes
-  HAL_I2C_Mem_Write(&hi2c2, ACC_GYRO_ADDR, CTRL10_C, I2C_MEMADD_SIZE_8BIT, i2c2_buf, 1, 1);
-  i2c2_buf[0] = 0x14;		// 13 Hz ODR, 500 dps
-  HAL_I2C_Mem_Write(&hi2c2, ACC_GYRO_ADDR, CTRL2_G, I2C_MEMADD_SIZE_8BIT, i2c2_buf, 1, 1);
-
-  // cfg acc
-  i2c2_buf[0] = 0x38;		// enable X,Y,Z axes
-  HAL_I2C_Mem_Write(&hi2c2, ACC_GYRO_ADDR, CTRL9_XL, I2C_MEMADD_SIZE_8BIT, i2c2_buf, 1, 1);
-  i2c2_buf[0] = 0x10;		// 13 Hz ODR, +/- 2 g
-  HAL_I2C_Mem_Write(&hi2c2, ACC_GYRO_ADDR, CTRL1_XL, I2C_MEMADD_SIZE_8BIT, i2c2_buf, 1, 1);
+  init_IMU();
 
   /* USER CODE END 2 */
 
@@ -222,37 +292,10 @@ int main(void)
 		  HAL_GPIO_TogglePin(MOT_DIR1_GPIO_Port, MOT_DIR1_Pin);
 
 	  /* IMU */
-	  HAL_I2C_Mem_Read(&hi2c2, ACC_GYRO_ADDR, STATUS_REG, I2C_MEMADD_SIZE_8BIT, i2c2_buf, 1, 1);
-	  uint8_t tmp_stat = i2c2_buf[0];
-	  if (tmp_stat & SR_XLDA)
-	  {
-		  HAL_I2C_Mem_Read(&hi2c2, ACC_GYRO_ADDR, OUTX_L_XL, I2C_MEMADD_SIZE_8BIT, i2c2_buf, 6, 1);
-		  sprintf(str, "acc %+4hi%+4hi%+4hi",
-				  (int8_t)*(i2c2_buf+1), (int8_t)*(i2c2_buf+3), (int8_t)*(i2c2_buf+5));
-		  BSP_LCD_DisplayStringAtLine(12, (uint8_t *) str);
-	  }
-	  if (tmp_stat & SR_GDA)
-	  {
-		  HAL_I2C_Mem_Read(&hi2c2, ACC_GYRO_ADDR, OUTX_L_G, I2C_MEMADD_SIZE_8BIT, i2c2_buf, 6, 1);
-		  sprintf(str, "gyro %+4hi%+4hi%+4hi",
-				  (int8_t)*(i2c2_buf+1), (int8_t)*(i2c2_buf+3), (int8_t)*(i2c2_buf+5));
-		  BSP_LCD_DisplayStringAtLine(11, (uint8_t *) str);
-	  }
+	   wczytywanie_IMU();
 
-	  HAL_Delay(100);
-
-	  if (HAL_GPIO_ReadPin(B1_GPIO_Port, B1_Pin) == GPIO_PIN_RESET)
-	  {
-		  float cnt = (float)__HAL_TIM_GetCounter(&htim4) / 10;
-
-		  uint8_t str[20];
-		  sprintf((char*)str, "mot %.1f\r", cnt);
-		  BSP_LCD_DisplayStringAtLine(5, (uint8_t *) str);
-
-		  pulse_cnt = 500;
-		  HAL_TIM_PWM_Start_IT(&htim2, TIM_CHANNEL_2);
-	  }
   }
+
   /* USER CODE END 3 */
 }
 
