@@ -279,7 +279,7 @@ int main(void)
 			//To jest tylko utuchomienie timera z obsługą przerwania
 			//Nie ma potrzeby się tu pokazywać dopóki te kroki się nie wykonają
 
-			//należy zadawać co jakiś czas określoną liczbę kroków i wmiedzy czasie odczytywać inne wartosci (zwolnić moc obliczeniową
+			//należy zadawać co jakiś czas określoną liczbę kroków i wmiedzy czasie odczytywać inne wartosci (zwolnić moc obliczeniową)
 
 
 		}
