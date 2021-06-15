@@ -295,10 +295,9 @@ int main(void)
 		_Bool tryb = 0; //ogólnie to użytkownik to będzie podawał poprzez GUI
 		double kat_start = 30; //ogólnie to użytkownik to będzie podawał poprzez GUI
 		double kat_obr = 60; //ogólnie to użytkownik to będzie podawał poprzez GUI
-		double czas = 120; //chyba nie będzie potrzebna ta zmienna bo wymagałaby zmiany wartości w liczniku tim2 (będziemy poruszać sie z stałą prędkością)
+		// na razie tego nie robimy - double czas = 120; //chyba nie będzie potrzebna ta zmienna bo wymagałaby zmiany wartości w liczniku tim2 (będziemy poruszać sie z stałą prędkością)
 		double kat_obecny; //dane z funkci IMU
 		HAL_GPIO_WritePin(GPIOA, MOT_WARUNEK_OPUSZCZENIA, GPIO_PIN_RESET);
-
 
 
 
@@ -307,14 +306,14 @@ int main(void)
 
 			euler();
 			kat_obecny = eulerAngles[2] * 180 / 3,14; //odczytanie bieżącego kąta, GUI pobira tą wartość
-
+			// funkcjaGUI(kat_obecny);
 
 			while((kat_start - 2) <= kat_obecny && kat_obecny <= (kat_start + 2)) //ustawienie na pozycje startową
 			{
 
 				euler();
 				kat_obecny = eulerAngles[2] * 180 / 3,14; //odczytanie bieżącego kąta, GUI pobira tą wartość
-
+				
 				if(0 <= (kat_obecny - kat_start))
 				{
 
