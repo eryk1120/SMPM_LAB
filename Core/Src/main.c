@@ -58,7 +58,7 @@ TIM_HandleTypeDef htim4;
 UART_HandleTypeDef huart2;
 
 //tablica z odczytywanyi zmiennymi
-	int8_t odczyt[9] = { 0 };
+	int16_t odczyt[9] = { 0 };
 
 // Floats for raw values: pitch, theta gathered only from acceleroemter
   float phiRAW_a;
@@ -165,8 +165,9 @@ void init_IMU()
 
 void wczytywanie_IMU()
 {
-		//char str[40];
+		char str[40];
 		uint8_t i2c2_buf[10];
+		 uint16_t pom;
 
 		  HAL_I2C_Mem_Read(&hi2c2, ACC_GYRO_ADDR, STATUS_REG, I2C_MEMADD_SIZE_8BIT, i2c2_buf, 1, 1);
 		  uint8_t tmp_stat_acc = i2c2_buf[0];
@@ -174,24 +175,33 @@ void wczytywanie_IMU()
 		  if (tmp_stat_acc & SR_XLDA) // dostępne nowe dane akcelerometr
 		  {
 			  HAL_I2C_Mem_Read(&hi2c2, ACC_GYRO_ADDR, OUTX_L_XL, I2C_MEMADD_SIZE_8BIT, i2c2_buf, 6, 1);
-			//  sprintf(str, "acc %+4hi%+4hi%+4hi",
-			//		  (int8_t)*(i2c2_buf+1), (int8_t)*(i2c2_buf+3), (int8_t)*(i2c2_buf+5));
-			// BSP_LCD_DisplayStringAtLine(12, (uint8_t *) str);
 
-			   odczyt[0] = i2c2_buf[1];
-			   odczyt[1] = i2c2_buf[3];
-			   odczyt[2] = i2c2_buf[5];
+			   pom=i2c2_buf[1]<<8; //starszy bajt przesuwam o 8 bitów lewo
+			   odczyt[0] = i2c2_buf[0]+pom; //dodaje bajty
+			   pom=i2c2_buf[3]<<8;
+			   odczyt[1] = i2c2_buf[2]+pom;
+			   pom=i2c2_buf[5]<<8;
+			   odczyt[2] = i2c2_buf[4]+pom;
+
+			//	  sprintf(str, "acc %+4hi%+4hi%+4hi",
+			//			  (int16_t)*(odczyt + 1), (int16_t)*(odczyt + 2), (int16_t)*(odczyt + 3));
+			//	 BSP_LCD_DisplayStringAtLine(12, (uint16_t *) str);
 		  }
 
 		  if (tmp_stat_acc & SR_GDA) // dostępne nowe dane gyroscope
 		  {
 			  HAL_I2C_Mem_Read(&hi2c2, ACC_GYRO_ADDR, OUTX_L_G, I2C_MEMADD_SIZE_8BIT, i2c2_buf, 6, 1);
-			//  sprintf(str, "gyro %+4hi%+4hi%+4hi",
-			//		  (int8_t)*(i2c2_buf+1), (int8_t)*(i2c2_buf+3), (int8_t)*(i2c2_buf+5));
-			//  BSP_LCD_DisplayStringAtLine(11, (uint8_t *) str);
-			   odczyt[3] = i2c2_buf[1];
-			   odczyt[4] = i2c2_buf[3];
-			   odczyt[5] = i2c2_buf[5];
+
+			  	  pom=i2c2_buf[1]<<8;
+				   odczyt[3] = i2c2_buf[0]+pom;
+				   pom=i2c2_buf[3]<<8;
+				   odczyt[4] = i2c2_buf[2]+pom;
+				   pom=i2c2_buf[5]<<8;
+				   odczyt[5] = i2c2_buf[4]+pom;
+
+				//	  sprintf(str, "gyr %+4hi%+4hi%+4hi",
+				//			  (int16_t)*(odczyt + 4), (int16_t)*(odczyt + 5), (int16_t)*(odczyt + 6));
+				//	 BSP_LCD_DisplayStringAtLine(12, (uint16_t *) str);
 		  }
 
 		  HAL_I2C_Mem_Read(&hi2c2, MAG_ADDR, STATUS_REG_mag, I2C_MEMADD_SIZE_8BIT, i2c2_buf + 1, 1, 1);
@@ -200,13 +210,17 @@ void wczytywanie_IMU()
 		  if (tmp_stat_mag & SR_ZYXDA) // dostępne nowe dane magnetometr
 		  {
 			  HAL_I2C_Mem_Read(&hi2c2, MAG_ADDR, OUT_X_L, I2C_MEMADD_SIZE_8BIT, i2c2_buf, 6, 1);
-			//  sprintf(str, "mag %+4hi%+4hi%+4hi",
-			//	  (int8_t) * (i2c2_buf + 1), (int8_t) * (i2c2_buf + 3), (int8_t) * (i2c2_buf + 5));
-			//  BSP_LCD_DisplayStringAtLine(11, (uint8_t *) str);
 
-			   odczyt[6] = i2c2_buf[1];
-			   odczyt[7] = i2c2_buf[3];
-			   odczyt[8] = i2c2_buf[5];
+			  	  pom=i2c2_buf[1]<<8;
+				   odczyt[6] = i2c2_buf[0]+pom;
+				   pom=i2c2_buf[3]<<8;
+				   odczyt[7] = i2c2_buf[2]+pom;
+				   pom=i2c2_buf[5]<<8;
+				   odczyt[8] = i2c2_buf[4]+pom;
+
+				//	  sprintf(str, "mag %+4hi%+4hi%+4hi",
+				//			  (int16_t)*(odczyt + 7), (int16_t)*(odczyt + 8), (int16_t)*(odczyt + 9));
+				//	 BSP_LCD_DisplayStringAtLine(12, (uint16_t *) str);
 		  }
 }
 
