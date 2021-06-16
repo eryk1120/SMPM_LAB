@@ -285,6 +285,7 @@ int main(void)
 
 
 
+
 		// funkcja licząca różne wartości??
 
 		tryb = funkcja_zwracająca_tryb(); //ogólnie to użytkownik to będzie podawał poprzez GUI
