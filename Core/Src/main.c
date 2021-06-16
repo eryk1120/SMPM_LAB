@@ -285,7 +285,6 @@ int main(void)
 
 
 
-
 		// funkcja licząca różne wartości??
 
 		tryb = funkcja_zwracająca_tryb(); //ogólnie to użytkownik to będzie podawał poprzez GUI
@@ -304,6 +303,7 @@ int main(void)
 			euler();
 			kat_obecny = eulerAngles[2] * 180 / 3,14; //odczytanie bieżącego kąta, GUI pobira tą wartość
 			// funkcjaGUI(kat_obecny);
+
 			kat_obr = funkcja_kat_obrot(); //ogólnie to użytkownik to będzie podawał poprzez GUI
 
 			while((kat_start - 2) <= kat_obecny && kat_obecny <= (kat_start + 2)) //ustawienie na pozycje startową
