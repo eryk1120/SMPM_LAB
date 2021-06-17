@@ -130,7 +130,7 @@ void Pulse_Counter(void) {
 * \author Karol Zalewski i Łukasz Nowicki
  */
 void init_IMU() {
-	uint8_t i2c2_buf[10]; /** tablica buforów do których są wczytywane dane z kolejnych wybranych rejestrów czujnika */
+	uint8_t i2c2_buf[10]; /*!< T tablica buforów do których są wczytywane dane z kolejnych wybranych rejestrów czujnika */
 	HAL_I2C_Mem_Read(&hi2c2, ACC_GYRO_ADDR, WHO_AM_I, I2C_MEMADD_SIZE_8BIT,
 			i2c2_buf, 1, 1); /** konfiguracja odczytu po magistrali I2C */
 	HAL_I2C_Mem_Read(&hi2c2, 0x1e << 1, 0x0f, I2C_MEMADD_SIZE_8BIT,
@@ -181,6 +181,7 @@ void init_IMU() {
 *
 * funkcja ma na celu wczytanie wszystkich 9 wartosci z żyroskopu, magnetometru i akcelerometru. Nastepnie wartosci
 przeliczane są na odpowiedni zakres.
+* \author Karol Zalewski i Łukasz Nowicki
 */   
 void wczytywanie_IMU() {
 
@@ -197,8 +198,8 @@ void wczytywanie_IMU() {
 	{
 		HAL_I2C_Mem_Read(&hi2c2, ACC_GYRO_ADDR, OUTX_L_XL, I2C_MEMADD_SIZE_8BIT,
 				i2c2_buf, 6, 1); /** odczytwartosci z czujnika */
-		/* dodanie bajtu starszego z mlodszym, starszy bajt przesuwam o 8 bitów w lewo,
-		pom = i2c2_buf[1] << 8; */
+		/* dodanie bajtu starszego z mlodszym, starszy bajt przesuwam o 8 bitów w lewo, */
+		pom = i2c2_buf[1] << 8;
 		odczyt[0] = i2c2_buf[0] + pom;
 		pom = i2c2_buf[3] << 8;
 		odczyt[1] = i2c2_buf[2] + pom;
@@ -231,11 +232,11 @@ void wczytywanie_IMU() {
 			i2c2_buf + 1, 1, 1);
 	uint8_t tmp_stat_mag = i2c2_buf[1];
 
-	if (tmp_stat_mag & SR_ZYXDA) // dostępne nowe dane magnetometr
+	if (tmp_stat_mag & SR_ZYXDA) /** dostępne nowe dane magnetometr */
 	{
 		HAL_I2C_Mem_Read(&hi2c2, MAG_ADDR, OUT_X_L, I2C_MEMADD_SIZE_8BIT,
 				i2c2_buf, 6, 1); //odczytwartosci z czujnika
-		// polaczenie bajtu starszego z mlodszym, starszy bajt przesuwam o 8 bitów lewo, dodaje bajty
+		/** polaczenie bajtu starszego z mlodszym, starszy bajt przesuwam o 8 bitów lewo, dodaje bajty */
 		pom = i2c2_buf[1] << 8;
 		odczyt[6] = i2c2_buf[0] + pom;
 		pom = i2c2_buf[3] << 8;
@@ -248,18 +249,19 @@ void wczytywanie_IMU() {
 		//	 BSP_LCD_DisplayStringAtLine(12, (uint16_t *) str);
 	}
 
-	//zamiana jednostek z int16_t na odpowiednie jednostki fizyczne
-	//acc dla zakresu +-2g, wynikw [m/s^2]
+	/**zamiana jednostek z int16_t na odpowiednie jednostki fizyczne
+	acc dla zakresu +-2g, wynikw [m/s^2]
+	*/
 	IMU_raw[0] = (float) odczyt[0] * 2 * 9.81 / 32768;
 	IMU_raw[1] = (float) odczyt[1] * 2 * 9.81 / 32768;
 	IMU_raw[2] = (float) odczyt[2] * 2 * 9.81 / 32768;
 
-	//gyro dla zakresu 500dps, [degress per second]
+	/** gyro dla zakresu 500dps, [degress per second] */
 	IMU_raw[3] = (float) odczyt[3] * 500 / 32768;
 	IMU_raw[4] = (float) odczyt[4] * 500 / 32768;
 	IMU_raw[5] = (float) odczyt[5] * 500 / 32768;
 
-	//mag dla zakresu +-4Gs, wynikw [Gs]
+	/** magnetometr dla zakresu +-4Gs, wynikw [Gs] */
 	IMU_raw[6] = (float) odczyt[6] * 4 / 32768;
 	IMU_raw[7] = (float) odczyt[7] * 4 / 32768;
 	IMU_raw[8] = (float) odczyt[8] * 4 / 32768;
@@ -271,34 +273,39 @@ void wczytywanie_IMU() {
 	//	  sprintf(str, "acc %+4hi%+4hi%+4hi",
 	//			  (float)*(IMU_raw + 7), (float)*(IMU_raw + 8), (float)*(IMU_raw + 9));
 }
-
+/**
+ * \brief Obliczenie kątów Eulera
+ *
+ *  Wpisane wartości kątów Eulera do tablicy globalnej eulerAngels
+ *  \author Filip Budny
+ */
 void Euler() {
 
-	// Calculating raw values: pitch, theta gathered only from acceleroemter
+	/** Calculating raw values: pitch, theta gathered only from acceleroemter */
 	thetaRAW_a = -atan2(IMU_raw[0] / 9.8, IMU_raw[2] / 9.8) / 2 / 3.141592654
 			* 360;
 	phiRAW_a = -atan2(IMU_raw[1] / 9.8, IMU_raw[2] / 9.8) / 2 / 3.141592654
 			* 360;
 
-	// Calculating low-pass filtered values: pitch, theta gathered only from acceleroemter
+	/** Calculating low-pass filtered values: pitch, theta gathered only from acceleroemter */
 	phiFIL_a = .93 * phiFIL_a_old + .07 * phiRAW_a;
 	thetaFIL_a = .93 * thetaFIL_a_old + .07 * thetaRAW_a;
 
-	// Timer values for calculating raw values: pitch, theta gathered only from gyroscope
+	/** Timer values for calculating raw values: pitch, theta gathered only from gyroscope */
 	uwTick = (uwTick - uwTickOld);
 	uwTickOld = uwTick;
 
-	// Calculating raw values: pitch, theta gathered only from gyroscope
+	/** Calculating raw values: pitch, theta gathered only from gyroscope */
 	thetaRAW_g = thetaRAW_g + IMU_raw[4] * uwTick;
 	phiRAW_g = phiRAW_g - IMU_raw[3] * uwTick;
 
-	// Calculating complementary filtred final values: pitch, theta gatheredfrom accelerometer and gyroscope
+	/** Calculating complementary filtred final values: pitch, theta gatheredfrom accelerometer and gyroscope */
 	thetaGLOBAL = (thetaGLOBAL + IMU_raw[4] * uwTick) * .93 + thetaFIL_a * .07;
 	phiGLOBAL = (phiGLOBAL - IMU_raw[3] * uwTick) * .93 + phiFIL_a * .07;
 	phiGLOBAL_rad = phiGLOBAL / 360 * (2 * 3.141592654);
 	thetaGLOBAL_rad = thetaGLOBAL / 360 * (2 * 3.141592654);
 
-	// Calculating complementary filtered final values: yaw from accelerometer, gyroscope and magnetometer
+	/* Calculating complementary filtered final values: yaw from accelerometer, gyroscope and magnetometer */
 	yawX = IMU_raw[6] * cos(thetaGLOBAL_rad)
 			- IMU_raw[7] * sin(phiGLOBAL_rad) * sin(thetaGLOBAL_rad)
 			+ IMU_raw[8] * cos(phiGLOBAL_rad) * sin(thetaGLOBAL_rad);
@@ -314,7 +321,7 @@ void Euler() {
 	// psi = yaw (around Z axis)
 	eulerAngles[2] = psiGLOBAL_rad;
 
-	// Getting old values for compensated filtering pitch, roll and yaw
+	/** Getting old values for compensated filtering pitch, roll and yaw */
 	phiFIL_a_old = phiFIL_a;
 	thetaFIL_a_old = thetaFIL_a;
 
