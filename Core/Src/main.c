@@ -155,10 +155,7 @@ int main(void)
 
   /* Flick */
   flick_reset();
-  flick_set_param(0x90, 0x20, 0x20); //ustawienie odpowiednich parametrow do wlaczenia airwheela
-  flick_set_param(0x97, 0x08, 0x08); //ustawienie odpowiednich parametrow do wlaczenia dotyku
-  flick_set_param(0x85, 0x66, 0x66); //ustawienie odpowiednich parametrow do wlaczenia przesunięcia nad flickiem.
-                                     //Ustawiony został bit 1, 2, 5, 6. 37 strona w dokumentacji tlumaczy co oznaczaja odpowiednie bity
+  flick_gesture_set();
 
   /* IMU */
   uint8_t i2c2_buf[10];
@@ -192,50 +189,18 @@ int main(void)
     /* USER CODE BEGIN 3 */
 
 	  uint32_t gesture, touch;
-	  uint16_t Xpom,Ypom,Zpom;
 	  airwheel_data_t airwheel;
 	  char str[20];
 
 	  flick_poll_data(&gesture, &touch, &airwheel);
 
-	  if(airwheel.new_data == FLICK_NEW_DATA)
-	  {
-	  	  BSP_LCD_Clear(LCD_COLOR_YELLOW);
-		  BSP_LCD_DrawCircle(50, 110, 22);
-		  BSP_LCD_FillCircle(50, 110, 12);
-
-		  sprintf(str, "pos: %02d cnt: %02d", airwheel.position, airwheel.count);
-		  BSP_LCD_DisplayStringAtLine(4, (uint8_t *) str);
-
-		  uint8_t circy = 110 - 12 * sin(2*3.1416*airwheel.position/32);
-		  uint8_t circx = 50 - 12 * cos(2*3.1416*airwheel.position/32);
-
-		  BSP_LCD_FillCircle(circx, circy, 3);
-
-		  airwheel.new_data = FLICK_NO_DATA;
-	  }
-	  Xpom=airwheel.X;
-	  Ypom=airwheel.Y;
-	  Zpom=airwheel.Z;
-	  if((gesture & 0xFF)==2)//west to east
-		  BSP_LCD_Clear(LCD_COLOR_GREEN);
-	  if((gesture & 0xFF)==3)//east to west
-		  BSP_LCD_Clear(LCD_COLOR_BLUE);
-
-	  sprintf(str, "g:%lx             ", gesture);
+	  sprintf(str, "d:%d             ", flick_airwheel_direction(airwheel));
 	  BSP_LCD_DisplayStringAtLine(1, (uint8_t *) str);
-	  sprintf(str, "gest:%d           ", (uint8_t) gesture);
+	  sprintf(str, "g:%d             ", flick_gesture_value(gesture));
 	  BSP_LCD_DisplayStringAtLine(2, (uint8_t *) str);
-	  sprintf(str, "t:%lx             ", touch);
+	  sprintf(str, "q:%d             ", flick_touch_position(airwheel));
 	  BSP_LCD_DisplayStringAtLine(3, (uint8_t *) str);
-	  sprintf(str, "X:%d             ", Xpom);
-	  BSP_LCD_DisplayStringAtLine(4, (uint16_t *) str);
-	  sprintf(str, "Y:%d             ", Ypom);
-	  BSP_LCD_DisplayStringAtLine(5, (uint16_t *) str);
-	  sprintf(str, "Z:%d             ", Zpom);
-	  BSP_LCD_DisplayStringAtLine(6, (uint16_t *) str);
-	  if ((uint8_t) gesture == 2)
-		  HAL_GPIO_TogglePin(MOT_DIR1_GPIO_Port, MOT_DIR1_Pin);
+
 
 	  /* IMU */
 	  HAL_I2C_Mem_Read(&hi2c2, ACC_GYRO_ADDR, STATUS_REG, I2C_MEMADD_SIZE_8BIT, i2c2_buf, 1, 1);
