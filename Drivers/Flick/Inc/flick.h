@@ -157,11 +157,6 @@ uint8_t flick_touch_position(airwheel_data_t airwheel);
  * 0 - brak dotknięcia
  * @return touch_q: 1,2,3,4,0
  */
-uint8_t flick_touch_position (airwheel_data_t airwheel);
-/**
- * @brief Ta funkcja sprawdza część ćwiartki flicka w której doszło do dotknięcia
 
- *
- * @param xyz_position Stryktura xyz_position_data przechowujaca pozycję XYZ
- */
+
 #endif /* INC_FLICK_H_ */
