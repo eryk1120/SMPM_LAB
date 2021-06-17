@@ -285,14 +285,15 @@ int main(void)
 
 
 
-		// funkcja licząca różne wartości??
-
-		tryb = funkcja_zwracająca_tryb(); //ogólnie to użytkownik to będzie podawał poprzez GUI
-		kat_start = funkcja_kat_start(); //ogólnie to użytkownik to będzie podawał poprzez GUI
+		
+		Screen_Motor_Steering(uint16_t gesture_2); // funkcja GUI do rozpoznania trybu (tryb), wymaga wpisania przez zespół GUI poprawnych parametrów wywołania funkcji
+		Angle_menu(const wchar_t *Title, uint16_t current_angle, int Mode); // funkcja GUI do obliczenia wartości kat_start i kat_obr, wymaga wpisania przez zespół GUI poprawnych parametrów wywołania funkcji
+		tryb = zmienna_z_funkcji_Screen_Motor_Steering; // dopisać nazwę zmiennej globalnej
+		kat_start = start_angle; //ogólnie to użytkownik to będzie podawał poprzez GUI
 		// na razie tego nie robimy - double czas = 120; //chyba nie będzie potrzebna ta zmienna bo wymagałaby zmiany wartości w liczniku tim2 (będziemy poruszać sie z stałą prędkością)
 		euler();
 		kat_obecny = eulerAngles[2] * 180 / 3,14; //odczytanie bieżącego kąta, GUI pobira tą wartość
-		// funkcjaGUI(kat_obecny);
+		Current_angle_screen(kat_obecny); // przekazanie kąta obecnego na screen do GUI
 		HAL_GPIO_WritePin(GPIOA, MOT_WARUNEK_OPUSZCZENIA, GPIO_PIN_RESET);
 
 
@@ -302,16 +303,16 @@ int main(void)
 
 			euler();
 			kat_obecny = eulerAngles[2] * 180 / 3,14; //odczytanie bieżącego kąta, GUI pobira tą wartość
-			// funkcjaGUI(kat_obecny);
+			Current_angle_screen(kat_obecny); // przekazanie kąta obecnego na screen do GUI
 
-			kat_obr = funkcja_kat_obrot(); //ogólnie to użytkownik to będzie podawał poprzez GUI
+			kat_obr = rot_angle; //ogólnie to użytkownik to będzie podawał poprzez GUI
 
 			while((kat_start - 2) <= kat_obecny && kat_obecny <= (kat_start + 2)) //ustawienie na pozycje startową
 			{
 
 				euler();
 				kat_obecny = eulerAngles[2] * 180 / 3,14; //odczytanie bieżącego kąta, GUI pobira tą wartość
-				// funkcjaGUI(kat_obecny);
+				Current_angle_screen(kat_obecny); // przekazanie kąta obecnego na screen do GUI
 				
 				if(0 <= (kat_obecny - kat_start))
 				{
@@ -336,7 +337,7 @@ int main(void)
 
 				euler();
 				kat_obecny = eulerAngles[2] * 180 / 3,14; //odczytanie bieżącego kąta, GUI pobira tą wartość
-				// funkcjaGUI(kat_obecny);
+				Current_angle_screen(kat_obecny); // przekazanie kąta obecnego na screen do GUI
 
 				if(kat_start <= (kat_start + kat_obr))
 				{
@@ -365,7 +366,7 @@ int main(void)
 
 				euler();
 				kat_obecny = eulerAngles[2] * 180 / 3,14; //odczytanie bieżącego kąta, GUI pobira tą wartość
-				// funkcjaGUI(kat_obecny);
+				Current_angle_screen(kat_obecny); // przekazanie kąta obecnego na screen do GUI
 
 				if(0 <= kat_obecny - kat_start)
 				{
