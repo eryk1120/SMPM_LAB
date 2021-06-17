@@ -72,7 +72,7 @@ flick_msg_t flick_receive(void)
 
 	return ret;
 }
-
+// raz dwa trzy pierwszy test ~ MM
 void flick_reset(void)
 {
 	FLICK_RESET_LOW();
@@ -173,4 +173,34 @@ flick_data_t flick_poll_data(uint32_t* gest_info, uint32_t* touch_info, airwheel
 	}
 
 	return ret;
+}
+
+
+/* funkcja sprawdzająca dotyk oraz część ćwiartki flicka w której doszło do dotknięcia,
+ * zwracane są wartości konkretnej ćwiartki ekranu
+ * podział :
+ * 1 - lewy górny
+ * 2 - prawy górny
+ * 3 - lewy dolny
+ * 4 - prawy dolny
+ *
+ * 0 - nie doszło do dotknięcia ekranu
+*/
+void  pozycja (  airwheel_data_t* airwheel)
+{ if(airwheel.Z == 0) //detekcja dotknięcia
+	{
+	if (airwheel.X < 32500 && airwheel.Y > 32500)
+	{return 1 ;
+		}
+	if (airwheel.X> 32500 && airwheel.Y > 32500)
+		{return 2 ;
+		}
+	if (airwheel.X < 32500 && airwheel.Y < 32500)
+		{return 3 ;
+		}
+	if (airwheel.X > 32500 && airwheel.Y < 32500)
+		{return 4 ;
+		}
+	}
+else return 0;
 }

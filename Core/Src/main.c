@@ -221,6 +221,10 @@ int main(void)
 		  BSP_LCD_Clear(LCD_COLOR_GREEN);
 	  if((gesture & 0xFF)==3)//east to west
 		  BSP_LCD_Clear(LCD_COLOR_BLUE);
+	  if((gesture & 0xFF)==4)//south to north
+			  BSP_LCD_Clear(LCD_COLOR_RED);
+	  if((gesture & 0xFF)==5)//north to south
+			  BSP_LCD_Clear(LCD_COLOR_BLUE);
 
 	  sprintf(str, "g:%lx             ", gesture);
 	  BSP_LCD_DisplayStringAtLine(1, (uint8_t *) str);
@@ -236,6 +240,12 @@ int main(void)
 	  BSP_LCD_DisplayStringAtLine(6, (uint16_t *) str);
 	  if ((uint8_t) gesture == 2)
 		  HAL_GPIO_TogglePin(MOT_DIR1_GPIO_Port, MOT_DIR1_Pin);
+
+
+
+
+
+
 
 	  /* IMU */
 	  HAL_I2C_Mem_Read(&hi2c2, ACC_GYRO_ADDR, STATUS_REG, I2C_MEMADD_SIZE_8BIT, i2c2_buf, 1, 1);
