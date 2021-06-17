@@ -174,7 +174,7 @@ void init_IMU() {
 	i2c2_buf[0] = 0x00;   /*00000000 ustawienie trybu Low-power mode, oraz Continuous-conversion mode */
 	HAL_I2C_Mem_Write(&hi2c2, MAG_ADDR, CTRL_REG3, I2C_MEMADD_SIZE_8BIT,
 			i2c2_buf, 1, 1);
-**/
+
 }
 /**  
 * \brief wczytywanie zmiennych IMU
@@ -187,7 +187,7 @@ void wczytywanie_IMU() {
 
 	int16_t odczyt[9] = { 0 }; 	/*tablica z odczytywanymi zmiennymi */
 	char str[40];
-	uint8_t i2c2_buf[10]; tablica buforów do których są wczytywane dane z kolejnych wybranych rejestrów czujnika */
+	uint8_t i2c2_buf[10]; /** tablica buforów do których są wczytywane dane z kolejnych wybranych rejestrów czujnika */
 	uint16_t pom; /** zmienna pomocnicza 16 bitowa typu int */
 
 	HAL_I2C_Mem_Read(&hi2c2, ACC_GYRO_ADDR, STATUS_REG, I2C_MEMADD_SIZE_8BIT,
