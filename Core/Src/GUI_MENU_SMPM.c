@@ -5,9 +5,10 @@
 /*zmienne z innych części programu */
 
 /* z silnika : */
-#define start_angle 		//kat startowy silnika 
+double start_angle; rot_angle;		//kat startowy silnika
 #define current_angle		// aktualne położenie silnika
 #define predicted_angle		// docelowe położenie silnika
+int tryb;
 
 #define BLACK     0x0000
 #define RED       0xf800
@@ -90,15 +91,16 @@ void Screen_Motor_Steering( uint16_t gesture_2)
 		case 1:
 		hagl_fill_rounded_rectangle(pos_x0,140,pos_x0 + width, 140 + height, 3, CYAN);
 		hagl_put_text("TRYB 0", pos_x0 + 5, 145, RED, font6x9);
-		
+		tryb == 0;
 		GoTo_0_mode();
 		break;
 		
 		case 2:
 		hagl_fill_rounded_rectangle( pos_x0, 120, pos_x0 + width, 120 + height, 3, CYAN);
 		hagl_put_text("TRYB 1", pos_x0 + 5, 125, RED, font6x9);
-
+		tryb == 1;
 		GoTo_1_mode();
+
 		break;
 	}
 }
@@ -133,7 +135,8 @@ void GoTo_0_mode ( uint16_t gesture)
 	hagl_putPtext(u"Kat startowy",2,130, RED, font5x7);
 	
 	/*zadanie kąta początkowego */
-	GoTo_Start_angle_screen();
+	//GoTo_Start_angle_screen();
+	 start_angle = Angle_menu ("Kat poczatkowy", current_angle, tryb );
 	break;
 	
 	case 3:
@@ -147,15 +150,16 @@ void GoTo_0_mode ( uint16_t gesture)
 	hagl_put_text(u"Kat obrot",78,130, RED, font5x7);
 	
 	/* ekran do nastawienia kąta obrotu silnika */
-	GoTo_rotate_angle_settings();	
+	//GoTo_rotate_angle_settings();
+	rot_angle = Angle_menu ("Obrot", start_angle, tryb );
 	break;
 	
 	case 5 :
 	hagl_fill_rectangle(80-24.5,74-15+10,80+24.5,74+15+10, CYAN);
-	hagl_put_text(u"Kat bierzacy",81-24.5,75-15+10, RED, font5x7);
+	hagl_put_text(u"Kat biezacy",81-24.5,75-15+10, RED, font5x7);
 	
-	//odczyt bierzacego kata
-	GoTo_Current_angle_screen();
+	//odczyt biezacego kata
+	Current_angle_screen();
 	break;
 	
 	case 6:
@@ -195,7 +199,8 @@ void GoTo_1_mode(uint16_t gesture)
 		hagl_putPtext(u"Kat startowy",2,130, RED, font5x7);
 		
 		/*zadanie kata poczatkowego */
-		GoTo_Start_angle_screen();
+		 start_angle = Angle_menu ("Kat poczatkowy", current_angle, tryb );
+		//GoTo_Start_angle_screen();
 		break;
 		
 		case 3:
@@ -211,6 +216,7 @@ void GoTo_1_mode(uint16_t gesture)
 		
 		/* ekran do nastawienia kata obrotu silnika */
 		GoTo_rotate_angle_settings();	
+		rot_angle = Angle_menu ("Obrot", start_angle, tryb );
 		break;
 		
 		case 5:
@@ -244,7 +250,7 @@ void potentiometer_animation(int gesture_rot_direction, uint16_t Screen_Height, 
 	hagl_fill_circle(x_c,y_c, 25, MAGENTA);
 	hagl_draw_vline(x_c,y_c,24,YELLOW);
 	
-	if(gesture_rot_direction = 1)	// obrót w prawo
+	if(gesture_rot_direction = 2)	// obrót w prawo
 	{
 	/* narysowanie linii prostej zmieniającej położenie z każdą iteracją */ 
 		for(int i =0; i <24; i++)
@@ -257,7 +263,7 @@ void potentiometer_animation(int gesture_rot_direction, uint16_t Screen_Height, 
 		}
 	}
 	/* obrót przeciwnie do ruchu wskazówek zegara */
-	if(gesture_rot_direction = 2)
+	if(gesture_rot_direction = 3)
 	{
 		for(int i = 24; i > 0; i--)
 		{
@@ -274,36 +280,49 @@ void potentiometer_animation(int gesture_rot_direction, uint16_t Screen_Height, 
 
 
 /* Panel nastawy kąta */
-void Angle_menu (const wchar_t *Title, uint16_t current_angle, const wchar_t *Mode )
+double Angle_menu (const wchar_t *Title, uint16_t current_angle, int Mode )
 {
+	double angle_set = current_angle; // pobranie info o aktualnym położeniu
+
 	hagl_fill_rectangle(1,1,30,30, CYAN);
 	/* wyświetlanie trybu w lewym dolnym rogu */
-	hagl_put_text(*Mode, 2, 2, BLACK, font6x9);
-	
+
+	hagl_put_text(Mode, 2, 2, BLACK, font6x9);
+	hagl_fill_rectangle(1,129,50,159, YELLOW);
+	hagl_put_text(*Title, 2, 130, BLACK, font6x9);
+
 	/* wyświetlanie aktualnej wartości kąta na dole na środku ekranu */ 
 	hagl_fill_rounded_rectangle(20, 35, 40, 93, 3, CYAN);
 	hagl_put_text(current_angle, 22, 37, YELLOW, font6x9);
-	potentiometer_animation( gesture_rot_direction, 160, 128);
-	
-	
+
+	if(gesture_rot_direction == 2)		// obroty zgodnie z ruchem wskazówek zegara
+		{
+		angle_set == angle_set + 1;
+		potentiometer_animation( 2, 160, 128);
+		}
+	if(gesture_rot_direction == 3)		// obroty przeciwnie do ruchu wskazówek zegara
+		{
+		angle_set == angle_set - 1;
+		potentiometer_animation( 3, 160, 128);
+		}
 	/* powrót pod wpływem dotknięcia prawego dolnego rogu Flicka */ 
 	
 	if(gesture == 3)
 	{
-		if( Mode == "Tryb 0")
+		if( Mode == 0)
 		{
 			GoTo_0_mode();
 		}
-		if (Mode == "Tryb 1")
+		if (Mode == 1)
 		{
 			GoTo_1_mode();
 		}
 	}
-	
-	
+return angle_set;
+}
 /* Panel odczytu biezacego kata obrotu
    Pobierana informacja o aktualnej pozycji katowej silnika */
-void Current_angle_screen(int current_angle)
+void Current_angle_screen(double current_angle)
 	{
 		/*hagl_fill_rectangle(1,1,50,30, CYAN);
 		hagl_putPtext(u"Tryb: " tryb,2,2, BLACK, font6x9);
