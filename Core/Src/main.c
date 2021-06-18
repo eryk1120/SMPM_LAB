@@ -194,9 +194,10 @@ int main(void)
 	  uint32_t gesture, touch;
 	  uint16_t Xpom,Ypom,Zpom;
 	  airwheel_data_t airwheel;
+	  gest_touch_xyz_data_t gest_touch_xyz;
 	  char str[20];
 
-	  flick_poll_data(&gesture, &touch, &airwheel);
+	  flick_poll_data(&gest_touch_xyz, &airwheel);
 
 	  if(airwheel.new_data == FLICK_NEW_DATA)
 	  {
@@ -214,9 +215,11 @@ int main(void)
 
 		  airwheel.new_data = FLICK_NO_DATA;
 	  }
-	  Xpom=airwheel.X;
-	  Ypom=airwheel.Y;
-	  Zpom=airwheel.Z;
+	  Xpom=gest_touch_xyz.X;
+	  Ypom=gest_touch_xyz.Y;
+	  Zpom=gest_touch_xyz.Z;
+	  gesture=gest_touch_xyz.gesture;
+	  touch=gest_touch_xyz.touch;
 	  if((gesture & 0xFF)==2)//west to east
 		  BSP_LCD_Clear(LCD_COLOR_GREEN);
 	  if((gesture & 0xFF)==3)//east to west
@@ -224,7 +227,15 @@ int main(void)
 	  if((gesture & 0xFF)==4)//south to north
 			  BSP_LCD_Clear(LCD_COLOR_RED);
 	  if((gesture & 0xFF)==5)//north to south
-			  BSP_LCD_Clear(LCD_COLOR_BLUE);
+			  BSP_LCD_Clear(LCD_COLOR_YELLOW);
+	  if(pozycja(&gest_touch_xyz)==1)
+		  BSP_LCD_Clear(LCD_COLOR_WHITE);
+	  if(pozycja(&gest_touch_xyz)==2)
+		  BSP_LCD_Clear(LCD_COLOR_MAGENTA);
+	  if(pozycja(&gest_touch_xyz)==3)
+		  BSP_LCD_Clear(LCD_COLOR_CYAN);
+	  if(pozycja(&gest_touch_xyz)==4)
+	 		  BSP_LCD_Clear(LCD_COLOR_GREY);
 
 	  sprintf(str, "g:%lx             ", gesture);
 	  BSP_LCD_DisplayStringAtLine(1, (uint8_t *) str);
@@ -238,6 +249,8 @@ int main(void)
 	  BSP_LCD_DisplayStringAtLine(5, (uint16_t *) str);
 	  sprintf(str, "Z:%d             ", Zpom);
 	  BSP_LCD_DisplayStringAtLine(6, (uint16_t *) str);
+
+
 	  if ((uint8_t) gesture == 2)
 		  HAL_GPIO_TogglePin(MOT_DIR1_GPIO_Port, MOT_DIR1_Pin);
 

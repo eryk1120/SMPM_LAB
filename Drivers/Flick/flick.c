@@ -103,7 +103,7 @@ void flick_set_param(uint16_t param_ID, uint32_t arg0, uint32_t arg1)
 	HAL_I2C_Master_Transmit(hi2cflick, FLICK_ADDR, msg, 16, 10);
 }
 
-flick_data_t flick_poll_data(uint32_t* gest_info, uint32_t* touch_info, airwheel_data_t* airwheel)
+flick_data_t flick_poll_data(gest_touch_xyz_data_t* gest_touch_xyz, airwheel_data_t* airwheel)
 {
 	flick_data_t ret = FLICK_NO_DATA;
 
@@ -123,7 +123,7 @@ flick_data_t flick_poll_data(uint32_t* gest_info, uint32_t* touch_info, airwheel
 		// check GestureInfo field
 		if (data_out_mask & (1<<1))
 		{
-			*gest_info = (flick_payload[3+data_ptr] << 24) +
+			gest_touch_xyz->gesture = (flick_payload[3+data_ptr] << 24) +
 					(flick_payload[2+data_ptr] << 16) +
 					(flick_payload[1+data_ptr] << 8) +
 					flick_payload[data_ptr];
@@ -135,7 +135,7 @@ flick_data_t flick_poll_data(uint32_t* gest_info, uint32_t* touch_info, airwheel
 		// check TouchInfo field
 		if (data_out_mask & (1<<2))
 		{
-			*touch_info = (flick_payload[3+data_ptr] << 24) +
+			gest_touch_xyz->touch = (flick_payload[3+data_ptr] << 24) +
 					(flick_payload[2+data_ptr] << 16) +
 					(flick_payload[1+data_ptr] << 8) +
 					flick_payload[data_ptr];
@@ -158,11 +158,11 @@ flick_data_t flick_poll_data(uint32_t* gest_info, uint32_t* touch_info, airwheel
 		//check XYZPosition field
 		if ((data_out_mask & (1<<4))&&(sys_info & (1<<0)))
 		{
-			airwheel->Z = (flick_payload[5+data_ptr] << 8) +
+			gest_touch_xyz->Z = (flick_payload[5+data_ptr] << 8) +
 					(flick_payload[4+data_ptr]);
-			airwheel->Y = (flick_payload[3+data_ptr] << 8) +
+			gest_touch_xyz->Y = (flick_payload[3+data_ptr] << 8) +
 					(flick_payload[2+data_ptr]);
-			airwheel->X = (flick_payload[1+data_ptr] << 8) +
+			gest_touch_xyz->X = (flick_payload[1+data_ptr] << 8) +
 					(flick_payload[data_ptr]);
 
 
@@ -186,19 +186,19 @@ flick_data_t flick_poll_data(uint32_t* gest_info, uint32_t* touch_info, airwheel
  *
  * 0 - nie doszło do dotknięcia ekranu
 */
-void  pozycja (  airwheel_data_t* airwheel)
-{ if(airwheel.Z == 0) //detekcja dotknięcia
+int  pozycja (  gest_touch_xyz_data_t* gest_touch_xyz)
+{ if((gest_touch_xyz->touch)&0x0210) //detekcja dotknięcia
 	{
-	if (airwheel.X < 32500 && airwheel.Y > 32500)
+	if ((gest_touch_xyz->X < 32500) && (gest_touch_xyz->Y > 32500))
 	{return 1 ;
 		}
-	if (airwheel.X> 32500 && airwheel.Y > 32500)
+	if ((gest_touch_xyz->X> 32500) && (gest_touch_xyz->Y > 32500))
 		{return 2 ;
 		}
-	if (airwheel.X < 32500 && airwheel.Y < 32500)
+	if ((gest_touch_xyz->X < 32500) && (gest_touch_xyz->Y < 32500))
 		{return 3 ;
 		}
-	if (airwheel.X > 32500 && airwheel.Y < 32500)
+	if ((gest_touch_xyz->X > 32500) && (gest_touch_xyz->Y < 32500))
 		{return 4 ;
 		}
 	}
