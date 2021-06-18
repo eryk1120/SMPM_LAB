@@ -190,9 +190,10 @@ int main(void)
 
 	  uint32_t gesture, touch;
 	  airwheel_data_t airwheel;
+	  gest_touch_xyz_data_t gest_touch_xyz;
 	  char str[20];
 
-	  flick_poll_data(&gesture, &touch, &airwheel);
+	  flick_poll_data(&gest_touch_xyz, &airwheel);
 
 	  sprintf(str, "d:%d             ", flick_airwheel_direction(airwheel));
 	  BSP_LCD_DisplayStringAtLine(1, (uint8_t *) str);
@@ -200,7 +201,6 @@ int main(void)
 	  BSP_LCD_DisplayStringAtLine(2, (uint8_t *) str);
 	  sprintf(str, "q:%d             ", flick_touch_position(airwheel));
 	  BSP_LCD_DisplayStringAtLine(3, (uint8_t *) str);
-
 
 	  /* IMU */
 	  HAL_I2C_Mem_Read(&hi2c2, ACC_GYRO_ADDR, STATUS_REG, I2C_MEMADD_SIZE_8BIT, i2c2_buf, 1, 1);
