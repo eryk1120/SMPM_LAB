@@ -9,7 +9,7 @@ var group___s_t_m32___a_d_a_f_r_u_i_t___l_c_d___exported___types =
       [ "X", "struct_point.html#a524784b9afa8fcb74e277e864bb5e0d2", null ],
       [ "Y", "struct_point.html#ae6e8763e99123e7b498edd106fa03d6b", null ]
     ] ],
-    [ "pPoint", "group___s_t_m32___a_d_a_f_r_u_i_t___l_c_d___exported___types.html#gade44147f1b04a7d9ef67adcb48416cbe", null ],
+    [ "pPoint", "group___s_t_m32___a_d_a_f_r_u_i_t___l_c_d___exported___types.html#gace93ab3d3cf5a56891a5728ae2695e41", null ],
     [ "Line_ModeTypdef", "group___s_t_m32___a_d_a_f_r_u_i_t___l_c_d___exported___types.html#ga664d4ab58ac192c237c413872ed4593d", [
       [ "CENTER_MODE", "group___s_t_m32___a_d_a_f_r_u_i_t___l_c_d___exported___types.html#gga664d4ab58ac192c237c413872ed4593da9537d6002fff2059cf4cf52d15bcf3ae", null ],
       [ "RIGHT_MODE", "group___s_t_m32___a_d_a_f_r_u_i_t___l_c_d___exported___types.html#gga664d4ab58ac192c237c413872ed4593daaaf915815100f7533b48039944d6f730", null ],
