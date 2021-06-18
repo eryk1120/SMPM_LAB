@@ -2,13 +2,17 @@
 #include "ST7735.h"
 #include "font5x7.h"
 #include "font6x9.h"
+#include "hagl.h"
+#include "hsl.h"
 /*zmienne z innych części programu */
 
 /* z silnika : */
-double start_angle; rot_angle;		//kat startowy silnika
+
 #define current_angle		// aktualne położenie silnika
 #define predicted_angle		// docelowe położenie silnika
 int tryb;
+double start_angle;
+double rot_angle;		//kat startowy silnika
 
 #define BLACK     0x0000
 #define RED       0xf800
@@ -18,23 +22,25 @@ int tryb;
 #define MAGENTA   0xf81f
 #define CYAN      0x07ff
 #define WHITE     0xffff
+
 uint16_t gesture;
 uint16_t gesture_2;
 uint16_t gesture_rot_direction;
+#define Xi
+#define Yi
+#define Zi
 /* deklaracje wszystkich funkcji żeby sie nie wywalało od czapy */
 void Screen_Motor_Steering( uint16_t gesture_2);
 void GoTo_0_mode ( uint16_t gesture);
 void GoTo_1_mode(uint16_t gesture);
 void potentiometer_animation(int gesture_rot_direction, uint16_t Screen_Height, uint16_t Screen_Width);
-void Angle_menu (const wchar_t *Title, uint16_t current_angle, const wchar_t *Mode );
+void Angle_menu ( wchar_t *Title, uint16_t current_angle, wchar_t *Mode );
 void Current_angle_screen(int current_angle);
 void Screen_Angular_Velocity(int angular_velocity);
 void Euler_Angular_Reading_Panel(int Xi, int Yi, int Zi);
 /* Ekran startowy */
 void Start_Screen (uint16_t gesture)
 {
-	
-	
 	hagl_fill_rectangle(1,1,50,30, YELLOW);
 	hagl_fill_rectangle(1,129,50,159, YELLOW);
 	hagl_fill_rectangle(77,1,77+50,30+1, YELLOW);
@@ -66,6 +72,7 @@ void Start_Screen (uint16_t gesture)
 	case 4:
 	hagl_fill_rectangle(77,129,77+50,30+129, CYAN);
 	hagl_put_text(u"Euler",78,130, RED, font5x7);
+	Euler_Angular_Reading_Panel (Xi, Yi, Zi);
 	break;
 	}
 }
@@ -92,14 +99,14 @@ void Screen_Motor_Steering( uint16_t gesture_2)
 		hagl_fill_rounded_rectangle(pos_x0,140,pos_x0 + width, 140 + height, 3, CYAN);
 		hagl_put_text("TRYB 0", pos_x0 + 5, 145, RED, font6x9);
 		tryb == 0;
-		GoTo_0_mode();
+		GoTo_0_mode(gesture);
 		break;
 		
 		case 2:
 		hagl_fill_rounded_rectangle( pos_x0, 120, pos_x0 + width, 120 + height, 3, CYAN);
 		hagl_put_text("TRYB 1", pos_x0 + 5, 125, RED, font6x9);
 		tryb == 1;
-		GoTo_1_mode();
+		GoTo_1_mode(gesture);
 
 		break;
 	}
@@ -136,7 +143,7 @@ void GoTo_0_mode ( uint16_t gesture)
 	
 	/*zadanie kąta początkowego */
 	//GoTo_Start_angle_screen();
-	 start_angle = Angle_menu ("Kat poczatkowy", current_angle, tryb );
+	 start_angle = Angle_menu("Kat poczatkowy", current_angle, tryb );
 	break;
 	
 	case 3:
@@ -151,7 +158,7 @@ void GoTo_0_mode ( uint16_t gesture)
 	
 	/* ekran do nastawienia kąta obrotu silnika */
 	//GoTo_rotate_angle_settings();
-	rot_angle = Angle_menu ("Obrot", start_angle, tryb );
+	rot_angle = Angle_menu("Obrot", start_angle, tryb );
 	break;
 	
 	case 5 :
@@ -159,7 +166,7 @@ void GoTo_0_mode ( uint16_t gesture)
 	hagl_put_text(u"Kat biezacy",81-24.5,75-15+10, RED, font5x7);
 	
 	//odczyt biezacego kata
-	Current_angle_screen();
+	Current_angle_screen(current_angle);
 	break;
 	
 	case 6:
@@ -199,7 +206,7 @@ void GoTo_1_mode(uint16_t gesture)
 		hagl_putPtext(u"Kat startowy",2,130, RED, font5x7);
 		
 		/*zadanie kata poczatkowego */
-		 start_angle = Angle_menu ("Kat poczatkowy", current_angle, tryb );
+		 start_angle = Angle_menu("Kat poczatkowy", current_angle, tryb );
 		//GoTo_Start_angle_screen();
 		break;
 		
@@ -216,7 +223,7 @@ void GoTo_1_mode(uint16_t gesture)
 		
 		/* ekran do nastawienia kata obrotu silnika */
 		GoTo_rotate_angle_settings();	
-		rot_angle = Angle_menu ("Obrot", start_angle, tryb );
+		rot_angle = Angle_menu(u"Obrot", start_angle, tryb);
 		break;
 		
 		case 5:
@@ -297,7 +304,7 @@ double Angle_menu (const wchar_t *Title, uint16_t current_angle, int Mode )
 
 	if(gesture_rot_direction == 2)		// obroty zgodnie z ruchem wskazówek zegara
 		{
-		angle_set == angle_set + 1;
+		angle_set = angle_set + 1;
 		potentiometer_animation( 2, 160, 128);
 		}
 	if(gesture_rot_direction == 3)		// obroty przeciwnie do ruchu wskazówek zegara
@@ -311,11 +318,11 @@ double Angle_menu (const wchar_t *Title, uint16_t current_angle, int Mode )
 	{
 		if( Mode == 0)
 		{
-			GoTo_0_mode();
+			GoTo_0_mode(gesture);
 		}
 		if (Mode == 1)
 		{
-			GoTo_1_mode();
+			GoTo_1_mode(gesture);
 		}
 	}
 return angle_set;
