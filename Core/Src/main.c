@@ -156,6 +156,7 @@ int main(void)
   /* Flick */
   flick_reset();
   flick_gesture_set();
+  uint8_t old_angular_position = 0;
 
   /* IMU */
   uint8_t i2c2_buf[10];
@@ -191,6 +192,7 @@ int main(void)
 	  uint32_t gesture, touch;
 	  airwheel_data_t airwheel;
 	  gest_touch_xyz_data_t gest_touch_xyz;
+
 	  char str[20];
 
 	  flick_poll_data(&gest_touch_xyz, &airwheel);
@@ -204,6 +206,9 @@ int main(void)
 
 		  sprintf(str, "pos: %02d cnt: %02d", airwheel.position, airwheel.count);
 		  BSP_LCD_DisplayStringAtLine(4, (uint8_t *) str);
+	  char str[20];
+
+	  flick_poll_data(&gest_touch_xyz, &airwheel);
 
 		  uint8_t circy = 110 - 12 * sin(2*3.1416*airwheel.position/32);
 		  uint8_t circx = 50 - 12 * cos(2*3.1416*airwheel.position/32);
@@ -212,9 +217,9 @@ int main(void)
 
 		  airwheel.new_data = FLICK_NO_DATA;
 	  }
-	  Xpom=gest_touch_xyz.X;
-	  Ypom=gest_touch_xyz.Y;
-	  Zpom=gest_touch_xyz.Z;
+	  uint16_t Xpom=gest_touch_xyz.X;
+	  uint16_t Ypom=gest_touch_xyz.Y;
+	  uint16_t Zpom=gest_touch_xyz.Z;
 	  gesture=gest_touch_xyz.gesture;
 	  touch=gest_touch_xyz.touch;
 	  if((gesture & 0xFF)==2)//west to east
@@ -225,22 +230,22 @@ int main(void)
 			  BSP_LCD_Clear(LCD_COLOR_RED);
 	  if((gesture & 0xFF)==5)//north to south
 			  BSP_LCD_Clear(LCD_COLOR_YELLOW);
-	  if(pozycja(&gest_touch_xyz)==1)
+	  if(flick_position_value(&gest_touch_xyz)==1)
 		  BSP_LCD_Clear(LCD_COLOR_WHITE);
-	  if(pozycja(&gest_touch_xyz)==2)
+	  if(flick_position_value(&gest_touch_xyz)==2)
 		  BSP_LCD_Clear(LCD_COLOR_MAGENTA);
-	  if(pozycja(&gest_touch_xyz)==3)
+	  if(flick_position_value(&gest_touch_xyz)==3)
 		  BSP_LCD_Clear(LCD_COLOR_CYAN);
-	  if(pozycja(&gest_touch_xyz)==4)
+	  if(flick_position_value(&gest_touch_xyz)==4)
 	 		  BSP_LCD_Clear(LCD_COLOR_GREEN);
 	  //komentarz
 
 	  sprintf(str, "g:%lx             ", gesture);
-	  sprintf(str, "d:%d             ", flick_airwheel_direction(airwheel));
+	  sprintf(str, "d:%d             ", flick_airwheel_direction(airwheel,&old_angular_position));
 	  BSP_LCD_DisplayStringAtLine(1, (uint8_t *) str);
 	  sprintf(str, "g:%d             ", flick_gesture_value(gesture));
 	  BSP_LCD_DisplayStringAtLine(2, (uint8_t *) str);
-	  sprintf(str, "q:%d             ", flick_touch_position(airwheel));
+	  sprintf(str, "q:%d             ", flick_position_value(&gest_touch_xyz));
 	  BSP_LCD_DisplayStringAtLine(3, (uint8_t *) str);
 
 	  /* IMU */
@@ -730,3 +735,4 @@ void assert_failed(uint8_t *file, uint32_t line)
 #endif /* USE_FULL_ASSERT */
 //czy to w końcu zostanie załadowane?
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
+

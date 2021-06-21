@@ -183,36 +183,26 @@ flick_data_t flick_poll_data(gest_touch_xyz_data_t* gest_touch_xyz, airwheel_dat
 	return ret;
 }
 
-
-//kom
-/* funkcja sprawdzająca dotyk oraz część ćwiartki flicka w której doszło do dotknięcia,
- * zwracane są wartości konkretnej ćwiartki ekranu
- * podział :
- * 1 - lewy górny
- * 2 - prawy górny
- * 3 - lewy dolny
- * 4 - prawy dolny
- *
- * 0 - nie doszło do dotknięcia ekranu
-*/
-int  pozycja (  gest_touch_xyz_data_t* gest_touch_xyz)
-{ if((gest_touch_xyz->touch)&0x0210) //detekcja dotknięcia
+uint8_t  flick_position_value (  gest_touch_xyz_data_t* gest_touch_xyz)
+{ 	uint8_t touch_q = 0;
+	if((gest_touch_xyz->touch)&0x0210) //detekcja dotknięcia
 	{
 	if ((gest_touch_xyz->X < 35000) && (gest_touch_xyz->Y > 28000))
-	{return 1 ;
+	{touch_q = 1;
 		}
 	if ((gest_touch_xyz->X> 35000) && (gest_touch_xyz->Y > 28000))
-		{return 2 ;
+		{touch_q = 2 ;
 		}
 	if ((gest_touch_xyz->X < 35000) && (gest_touch_xyz->Y < 28000))
-		{return 3 ;
+		{touch_q = 3 ;
 		}
 	if ((gest_touch_xyz->X > 35000) && (gest_touch_xyz->Y < 28000))
-		{return 4 ;
+		{touch_q = 4 ;
 		}
 	}
-else return 0;
-=======
+return touch_q;
+}
+
 void flick_gesture_set(void)
 {
 	//ustawienie odpowiednich parametrow do wlaczenia airwheela
@@ -224,8 +214,7 @@ void flick_gesture_set(void)
 	//ustawiony został bit 1, 2, 5, 6. 37 strona w dokumentacji tlumaczy co oznaczaja odpowiednie bity
 }
 
-uint8_t old_angular_position = 0;
-uint8_t flick_airwheel_direction(airwheel_data_t airwheel)
+uint8_t flick_airwheel_direction(airwheel_data_t airwheel, uint8_t* old_angular_position)
 {
 	uint8_t gesture_rot_direction = 0;
 
@@ -258,20 +247,4 @@ uint8_t flick_gesture_value(uint32_t gesture)
 		gesture_number = 4;
 	return gesture_number;
 }
-uint8_t flick_touch_position (airwheel_data_t airwheel)
-{
-	uint8_t touch_q = 0;
-	if(airwheel.Z == 0)
-	{
-		if (airwheel.X < 32500 && airwheel.Y > 32500)
-			touch_q = 1;
-		if (airwheel.X > 32500 && airwheel.Y > 32500)
-			touch_q = 2;
-		if (airwheel.X < 32500 && airwheel.Y < 32500)
-			touch_q = 3;
-		if (airwheel.X > 32500 && airwheel.Y < 32500)
-			touch_q = 4;
-		}
-	return touch_q;
-}
-//czy to w końcu zostanie załadowane?
+
