@@ -183,6 +183,7 @@ flick_data_t flick_poll_data(gest_touch_xyz_data_t* gest_touch_xyz, airwheel_dat
 	return ret;
 }
 
+
 //kom
 /* funkcja sprawdzająca dotyk oraz część ćwiartki flicka w której doszło do dotknięcia,
  * zwracane są wartości konkretnej ćwiartki ekranu
@@ -211,5 +212,66 @@ int  pozycja (  gest_touch_xyz_data_t* gest_touch_xyz)
 		}
 	}
 else return 0;
+=======
+void flick_gesture_set(void)
+{
+	//ustawienie odpowiednich parametrow do wlaczenia airwheela
+	flick_set_param(0x90, 0x20, 0x20);
+	//ustawienie odpowiednich parametrow do wlaczenia dotyku
+	flick_set_param(0x97, 0x08, 0x08);
+	//ustawienie odpowiednich parametrow do wlaczenia przesunięcia nad flickiem
+	flick_set_param(0x85, 0x66, 0x66);
+	//ustawiony został bit 1, 2, 5, 6. 37 strona w dokumentacji tlumaczy co oznaczaja odpowiednie bity
+}
+
+uint8_t old_angular_position = 0;
+uint8_t flick_airwheel_direction(airwheel_data_t airwheel)
+{
+	uint8_t gesture_rot_direction = 0;
+
+	//obrót w prawo zwraca 1 (za GUI)
+	if(airwheel.position>old_angular_position)
+		gesture_rot_direction=1;
+	//obrót w lewo zwraca
+	else if(airwheel.position<old_angular_position)
+		gesture_rot_direction=2;
+
+	old_angular_position=airwheel.position;
+	airwheel.new_data = FLICK_NO_DATA;
+	return gesture_rot_direction;
+}
+
+uint8_t flick_gesture_value(uint32_t gesture)
+{
+	uint8_t gesture_number = 0;
+	//West to East
+	if((gesture & 0xFF)==2)
+		gesture_number = 1;
+	//East to West
+	if ((gesture & 0xFF)==3)
+		gesture_number = 2;
+	//South to North
+	if ((gesture & 0xFF)==4)
+		gesture_number = 3;
+	//North to South
+	if ((gesture & 0xFF)==5)
+		gesture_number = 4;
+	return gesture_number;
+}
+uint8_t flick_touch_position (airwheel_data_t airwheel)
+{
+	uint8_t touch_q = 0;
+	if(airwheel.Z == 0)
+	{
+		if (airwheel.X < 32500 && airwheel.Y > 32500)
+			touch_q = 1;
+		if (airwheel.X > 32500 && airwheel.Y > 32500)
+			touch_q = 2;
+		if (airwheel.X < 32500 && airwheel.Y < 32500)
+			touch_q = 3;
+		if (airwheel.X > 32500 && airwheel.Y < 32500)
+			touch_q = 4;
+		}
+	return touch_q;
 }
 //czy to w końcu zostanie załadowane?

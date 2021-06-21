@@ -155,10 +155,7 @@ int main(void)
 
   /* Flick */
   flick_reset();
-  flick_set_param(0x90, 0x20, 0x20); //ustawienie odpowiednich parametrow do wlaczenia airwheela
-  flick_set_param(0x97, 0x08, 0x08); //ustawienie odpowiednich parametrow do wlaczenia dotyku
-  flick_set_param(0x85, 0x66, 0x66); //ustawienie odpowiednich parametrow do wlaczenia przesunięcia nad flickiem.
-                                     //Ustawiony został bit 1, 2, 5, 6. 37 strona w dokumentacji tlumaczy co oznaczaja odpowiednie bity
+  flick_gesture_set();
 
   /* IMU */
   uint8_t i2c2_buf[10];
@@ -192,12 +189,12 @@ int main(void)
     /* USER CODE BEGIN 3 */
 
 	  uint32_t gesture, touch;
-	  uint16_t Xpom,Ypom,Zpom;
 	  airwheel_data_t airwheel;
 	  gest_touch_xyz_data_t gest_touch_xyz;
 	  char str[20];
 
 	  flick_poll_data(&gest_touch_xyz, &airwheel);
+
 
 	  if(airwheel.new_data == FLICK_NEW_DATA)
 	  {
@@ -239,27 +236,12 @@ int main(void)
 	  //komentarz
 
 	  sprintf(str, "g:%lx             ", gesture);
+	  sprintf(str, "d:%d             ", flick_airwheel_direction(airwheel));
 	  BSP_LCD_DisplayStringAtLine(1, (uint8_t *) str);
-	  sprintf(str, "gest:%d           ", (uint8_t) gesture);
+	  sprintf(str, "g:%d             ", flick_gesture_value(gesture));
 	  BSP_LCD_DisplayStringAtLine(2, (uint8_t *) str);
-	  sprintf(str, "t:%lx             ", touch);
+	  sprintf(str, "q:%d             ", flick_touch_position(airwheel));
 	  BSP_LCD_DisplayStringAtLine(3, (uint8_t *) str);
-	  sprintf(str, "X:%d             ", Xpom);
-	  BSP_LCD_DisplayStringAtLine(4, (uint16_t *) str);
-	  sprintf(str, "Y:%d             ", Ypom);
-	  BSP_LCD_DisplayStringAtLine(5, (uint16_t *) str);
-	  sprintf(str, "Z:%d             ", Zpom);
-	  BSP_LCD_DisplayStringAtLine(6, (uint16_t *) str);
-
-
-	  if ((uint8_t) gesture == 2)
-		  HAL_GPIO_TogglePin(MOT_DIR1_GPIO_Port, MOT_DIR1_Pin);
-
-
-
-
-
-
 
 	  /* IMU */
 	  HAL_I2C_Mem_Read(&hi2c2, ACC_GYRO_ADDR, STATUS_REG, I2C_MEMADD_SIZE_8BIT, i2c2_buf, 1, 1);
