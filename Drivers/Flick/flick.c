@@ -72,7 +72,7 @@ flick_msg_t flick_receive(void)
 
 	return ret;
 }
-
+// raz dwa trzy pierwszy test ~ MM
 void flick_reset(void)
 {
 	FLICK_RESET_LOW();
@@ -103,13 +103,13 @@ void flick_set_param(uint16_t param_ID, uint32_t arg0, uint32_t arg1)
 	HAL_I2C_Master_Transmit(hi2cflick, FLICK_ADDR, msg, 16, 10);
 }
 
-flick_data_t flick_poll_data(uint32_t* gest_info, uint32_t* touch_info, airwheel_data_t* airwheel)
+flick_data_t flick_poll_data(gest_touch_xyz_data_t* gest_touch_xyz, airwheel_data_t* airwheel)
 {
 	flick_data_t ret = FLICK_NO_DATA;
 
 	if (flick_receive() == FLICK_MSG_SENSOR_DATA)
 	{
-		uint16_t data_out_mask = (flick_payload[5] << 8) + flick_payload[4];
+		uint16_t data_out_mask = (flick_payload[5] << 8) + flick_payload[4]; //strona 42 w dokumentacji
 		uint8_t sys_info = flick_payload[7];
 
 		uint8_t data_ptr = 8;
@@ -123,7 +123,7 @@ flick_data_t flick_poll_data(uint32_t* gest_info, uint32_t* touch_info, airwheel
 		// check GestureInfo field
 		if (data_out_mask & (1<<1))
 		{
-			*gest_info = (flick_payload[3+data_ptr] << 24) +
+			gest_touch_xyz->gesture = (flick_payload[3+data_ptr] << 24) +
 					(flick_payload[2+data_ptr] << 16) +
 					(flick_payload[1+data_ptr] << 8) +
 					flick_payload[data_ptr];
@@ -135,7 +135,7 @@ flick_data_t flick_poll_data(uint32_t* gest_info, uint32_t* touch_info, airwheel
 		// check TouchInfo field
 		if (data_out_mask & (1<<2))
 		{
-			*touch_info = (flick_payload[3+data_ptr] << 24) +
+			gest_touch_xyz->touch = (flick_payload[3+data_ptr] << 24) +
 					(flick_payload[2+data_ptr] << 16) +
 					(flick_payload[1+data_ptr] << 8) +
 					flick_payload[data_ptr];
@@ -145,13 +145,36 @@ flick_data_t flick_poll_data(uint32_t* gest_info, uint32_t* touch_info, airwheel
 		}
 
 		// check AirWheelInfo field
-		if ((data_out_mask & (1<<3)) && (sys_info & (1<<1)))
-		{
-			airwheel->position = flick_payload[data_ptr] & 0x1F;
-			airwheel->count = flick_payload[data_ptr] >>5;
-			airwheel->new_data = FLICK_NEW_DATA;
+		        if (data_out_mask & (1<<3))
+		        {
+		            data_ptr += 2;
 
-			data_ptr += 2;
+
+
+		            if(sys_info & (1<<1))
+		            {
+		                airwheel->position = flick_payload[data_ptr] & 0x1F;
+		                airwheel->count = flick_payload[data_ptr] >> 5;
+		                airwheel->new_data = FLICK_NEW_DATA;
+
+
+
+		                ret = FLICK_NEW_DATA;
+		            }
+		        }
+
+		//check XYZPosition field
+		if ((data_out_mask & (1<<4))&&(sys_info & (1<<0)))
+		{
+			gest_touch_xyz->Z = (flick_payload[5+data_ptr] << 8) +
+					(flick_payload[4+data_ptr]);
+			gest_touch_xyz->Y = (flick_payload[3+data_ptr] << 8) +
+					(flick_payload[2+data_ptr]);
+			gest_touch_xyz->X = (flick_payload[1+data_ptr] << 8) +
+					(flick_payload[data_ptr]);
+
+
+			data_ptr += 6;
 			ret = FLICK_NEW_DATA;
 		}
 
@@ -159,4 +182,33 @@ flick_data_t flick_poll_data(uint32_t* gest_info, uint32_t* touch_info, airwheel
 
 	return ret;
 }
-// sprawdzam czy to wszystko dziala
+
+
+/* funkcja sprawdzająca dotyk oraz część ćwiartki flicka w której doszło do dotknięcia,
+ * zwracane są wartości konkretnej ćwiartki ekranu
+ * podział :
+ * 1 - lewy górny
+ * 2 - prawy górny
+ * 3 - lewy dolny
+ * 4 - prawy dolny
+ *
+ * 0 - nie doszło do dotknięcia ekranu
+*/
+int  pozycja (  gest_touch_xyz_data_t* gest_touch_xyz)
+{ if((gest_touch_xyz->touch)&0x0210) //detekcja dotknięcia
+	{
+	if ((gest_touch_xyz->X < 35000) && (gest_touch_xyz->Y > 28000))
+	{return 1 ;
+		}
+	if ((gest_touch_xyz->X> 35000) && (gest_touch_xyz->Y > 28000))
+		{return 2 ;
+		}
+	if ((gest_touch_xyz->X < 35000) && (gest_touch_xyz->Y < 28000))
+		{return 3 ;
+		}
+	if ((gest_touch_xyz->X > 35000) && (gest_touch_xyz->Y < 28000))
+		{return 4 ;
+		}
+	}
+else return 0;
+}

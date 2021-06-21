@@ -70,6 +70,15 @@ typedef struct {
 	uint8_t count;			/**< counts of full rotations */
 } airwheel_data_t;
 
+
+typedef struct {
+	flick_data_t new_data;	/**< is new valid data reported? */
+	uint32_t gesture, touch;
+	uint16_t X;
+	uint16_t Y;
+	uint16_t Z;
+} gest_touch_xyz_data_t;
+
 /**
  * A handle for the I2C control structure (as used in the STM32 HAL library).
  * The structure should be initialized in the main user code
@@ -103,7 +112,9 @@ void flick_set_param(uint16_t param_ID, uint32_t arg0, uint32_t arg1);
  * @param airwheel		the @b airwheel_data_t structure, updated according to the received data (if any)
  * @return FLICK_NEW_DATA: if any data is available
  */
-flick_data_t flick_poll_data(uint32_t* gest_info, uint32_t* touch_info, airwheel_data_t* airwheel);
+flick_data_t flick_poll_data(gest_touch_xyz_data_t* gest_touch_xyz, airwheel_data_t* airwheel);
+
+int  pozycja (gest_touch_xyz_data_t* gest_touch_xyz);
 
 /**
  * @}
