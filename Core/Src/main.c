@@ -746,5 +746,5 @@ void assert_failed(uint8_t *file, uint32_t line)
   /* USER CODE END 6 */
 }
 #endif /* USE_FULL_ASSERT */
-
+//czy to w końcu zostanie załadowane?
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

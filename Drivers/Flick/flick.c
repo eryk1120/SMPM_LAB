@@ -212,3 +212,4 @@ int  pozycja (  gest_touch_xyz_data_t* gest_touch_xyz)
 	}
 else return 0;
 }
+//czy to w końcu zostanie załadowane?
