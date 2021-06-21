@@ -8,30 +8,30 @@
 #include "math.h"
 
 // Floats for raw values: pitch, theta gathered only from acceleroemter
-float phiRAW_a;
-float thetaRAW_a;
+float phiRAW_a; /**< Float for raw pitch/phi value gathered only from acceleroemter */
+float thetaRAW_a; /**< Float for raw roll/theta value gathered only from acceleroemter */
 
 // Floats for filtered values: pitch, theta gathered only from acceleroemter
-float phiFIL_a;
-float phiFIL_a_old;
-float thetaFIL_a;
-float thetaFIL_a_old;
+float phiFIL_a; /**<  Float for low-pass filtered pitch/phi gathered only from acceleroemter */
+float phiFIL_a_old;  /**< Float used for low-pass filtering pitch/phi gathered only from acceleroemter */
+float thetaFIL_a;  /**< Float for low-pass filtered roll/theta gathered only from acceleroemter */
+float thetaFIL_a_old;  /**< Float used for low-pass filtering roll/theta gathered only from acceleroemter  */
 
 // Floats for raw values: pitch, theta gathered only from gyroscope
-float phiRAW_g;
-float thetaRAW_g;
-float uwTickOld;
+float phiRAW_g;  /**< Float for raw pitch/phi value gathered only from gyroscope */
+float thetaRAW_g; /**< Float for raw roll/theta value gathered only from gyroscope */
+float uwTickOld;  /**< Float for time used in complementary filtering pitch/phi and roll/theta value gathered from accelerometer and gyroscope */
 
 // Floats for compensated final values: pitch, theta gathered from accelerometer and gyroscope
-float phiGLOBAL;
-float phiGLOBAL_rad;
-float thetaGLOBAL;
-float thetaGLOBAL_rad;
+float phiGLOBAL;  /**< Float for complementary filtered final pitch/phi gathered from accelerometer and gyroscope in degrees per second */
+float phiGLOBAL_rad;  /**< Float for complementary filtered final pitch/phi gathered from accelerometer and gyroscope in radians per second */
+float thetaGLOBAL;  /**< Float for complementary filtered final roll/theta gathered from accelerometer and gyroscope in degrees per second */
+float thetaGLOBAL_rad;  /**< Float for complementary filtered final roll/theta gathered from accelerometer and gyroscope in radians per second */
 
 // Floats for compensated final values: yaw gathered from accelerometer, gyroscope and magnetometer
-float yawX;
-float yawY;
-float psiGLOBAL_rad;
+float yawX;  /**<  Float used for calculating tilt compensated yaw/psi gathered from accelerometer, gyroscope and magnetometer  */
+float yawY;  /**< Float used for calculating tilt compensated yaw/psi gathered from accelerometer, gyroscope and magnetometer */
+float psiGLOBAL_rad;  /**< Float for tilt compensated final yaw/psi gathered from accelerometer and gyroscope in radians per second */
 
 /**
  * \brief inicjalizacja czujnika IMU
