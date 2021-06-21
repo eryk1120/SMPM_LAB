@@ -236,6 +236,7 @@ int main(void)
 		  BSP_LCD_Clear(LCD_COLOR_CYAN);
 	  if(pozycja(&gest_touch_xyz)==4)
 	 		  BSP_LCD_Clear(LCD_COLOR_GREEN);
+	  //komentarz
 
 	  sprintf(str, "g:%lx             ", gesture);
 	  BSP_LCD_DisplayStringAtLine(1, (uint8_t *) str);

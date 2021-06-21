@@ -183,7 +183,7 @@ flick_data_t flick_poll_data(gest_touch_xyz_data_t* gest_touch_xyz, airwheel_dat
 	return ret;
 }
 
-
+//kom
 /* funkcja sprawdzająca dotyk oraz część ćwiartki flicka w której doszło do dotknięcia,
  * zwracane są wartości konkretnej ćwiartki ekranu
  * podział :
