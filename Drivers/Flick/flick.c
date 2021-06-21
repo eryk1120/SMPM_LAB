@@ -145,15 +145,23 @@ flick_data_t flick_poll_data(gest_touch_xyz_data_t* gest_touch_xyz, airwheel_dat
 		}
 
 		// check AirWheelInfo field
-		if ((data_out_mask & (1<<3)) && (sys_info & (1<<1)))
-		{
-			airwheel->position = flick_payload[data_ptr] & 0x1F;
-			airwheel->count = flick_payload[data_ptr] >>5;
-			airwheel->new_data = FLICK_NEW_DATA;
+		        if (data_out_mask & (1<<3))
+		        {
+		            data_ptr += 2;
 
-			data_ptr += 2;
-			ret = FLICK_NEW_DATA;
-		}
+
+
+		            if(sys_info & (1<<1))
+		            {
+		                airwheel->position = flick_payload[data_ptr] & 0x1F;
+		                airwheel->count = flick_payload[data_ptr] >> 5;
+		                airwheel->new_data = FLICK_NEW_DATA;
+
+
+
+		                ret = FLICK_NEW_DATA;
+		            }
+		        }
 
 		//check XYZPosition field
 		if ((data_out_mask & (1<<4))&&(sys_info & (1<<0)))
@@ -189,16 +197,16 @@ flick_data_t flick_poll_data(gest_touch_xyz_data_t* gest_touch_xyz, airwheel_dat
 int  pozycja (  gest_touch_xyz_data_t* gest_touch_xyz)
 { if((gest_touch_xyz->touch)&0x0210) //detekcja dotknięcia
 	{
-	if ((gest_touch_xyz->X < 32500) && (gest_touch_xyz->Y > 32500))
+	if ((gest_touch_xyz->X < 35000) && (gest_touch_xyz->Y > 28000))
 	{return 1 ;
 		}
-	if ((gest_touch_xyz->X> 32500) && (gest_touch_xyz->Y > 32500))
+	if ((gest_touch_xyz->X> 35000) && (gest_touch_xyz->Y > 28000))
 		{return 2 ;
 		}
-	if ((gest_touch_xyz->X < 32500) && (gest_touch_xyz->Y < 32500))
+	if ((gest_touch_xyz->X < 35000) && (gest_touch_xyz->Y < 28000))
 		{return 3 ;
 		}
-	if ((gest_touch_xyz->X > 32500) && (gest_touch_xyz->Y < 32500))
+	if ((gest_touch_xyz->X > 35000) && (gest_touch_xyz->Y < 28000))
 		{return 4 ;
 		}
 	}
