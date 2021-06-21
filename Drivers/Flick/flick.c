@@ -145,15 +145,23 @@ flick_data_t flick_poll_data(gest_touch_xyz_data_t* gest_touch_xyz, airwheel_dat
 		}
 
 		// check AirWheelInfo field
-		if ((data_out_mask & (1<<3)) && (sys_info & (1<<1)))
-		{
-			airwheel->position = flick_payload[data_ptr] & 0x1F;
-			airwheel->count = flick_payload[data_ptr] >>5;
-			airwheel->new_data = FLICK_NEW_DATA;
+		        if (data_out_mask & (1<<3))
+		        {
+		            data_ptr += 2;
 
-			data_ptr += 2;
-			ret = FLICK_NEW_DATA;
-		}
+
+
+		            if(sys_info & (1<<1))
+		            {
+		                airwheel->position = flick_payload[data_ptr] & 0x1F;
+		                airwheel->count = flick_payload[data_ptr] >> 5;
+		                airwheel->new_data = FLICK_NEW_DATA;
+
+
+
+		                ret = FLICK_NEW_DATA;
+		            }
+		        }
 
 		//check XYZPosition field
 		if ((data_out_mask & (1<<4))&&(sys_info & (1<<0)))
@@ -175,6 +183,36 @@ flick_data_t flick_poll_data(gest_touch_xyz_data_t* gest_touch_xyz, airwheel_dat
 	return ret;
 }
 
+
+//kom
+/* funkcja sprawdzająca dotyk oraz część ćwiartki flicka w której doszło do dotknięcia,
+ * zwracane są wartości konkretnej ćwiartki ekranu
+ * podział :
+ * 1 - lewy górny
+ * 2 - prawy górny
+ * 3 - lewy dolny
+ * 4 - prawy dolny
+ *
+ * 0 - nie doszło do dotknięcia ekranu
+*/
+int  pozycja (  gest_touch_xyz_data_t* gest_touch_xyz)
+{ if((gest_touch_xyz->touch)&0x0210) //detekcja dotknięcia
+	{
+	if ((gest_touch_xyz->X < 35000) && (gest_touch_xyz->Y > 28000))
+	{return 1 ;
+		}
+	if ((gest_touch_xyz->X> 35000) && (gest_touch_xyz->Y > 28000))
+		{return 2 ;
+		}
+	if ((gest_touch_xyz->X < 35000) && (gest_touch_xyz->Y < 28000))
+		{return 3 ;
+		}
+	if ((gest_touch_xyz->X > 35000) && (gest_touch_xyz->Y < 28000))
+		{return 4 ;
+		}
+	}
+else return 0;
+=======
 void flick_gesture_set(void)
 {
 	//ustawienie odpowiednich parametrow do wlaczenia airwheela
@@ -236,3 +274,4 @@ uint8_t flick_touch_position (airwheel_data_t airwheel)
 		}
 	return touch_q;
 }
+//czy to w końcu zostanie załadowane?

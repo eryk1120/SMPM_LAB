@@ -195,6 +195,47 @@ int main(void)
 
 	  flick_poll_data(&gest_touch_xyz, &airwheel);
 
+
+	  if(airwheel.new_data == FLICK_NEW_DATA)
+	  {
+	  	  BSP_LCD_Clear(LCD_COLOR_YELLOW);
+		  BSP_LCD_DrawCircle(50, 110, 22);
+		  BSP_LCD_FillCircle(50, 110, 12);
+
+		  sprintf(str, "pos: %02d cnt: %02d", airwheel.position, airwheel.count);
+		  BSP_LCD_DisplayStringAtLine(4, (uint8_t *) str);
+
+		  uint8_t circy = 110 - 12 * sin(2*3.1416*airwheel.position/32);
+		  uint8_t circx = 50 - 12 * cos(2*3.1416*airwheel.position/32);
+
+		  BSP_LCD_FillCircle(circx, circy, 3);
+
+		  airwheel.new_data = FLICK_NO_DATA;
+	  }
+	  Xpom=gest_touch_xyz.X;
+	  Ypom=gest_touch_xyz.Y;
+	  Zpom=gest_touch_xyz.Z;
+	  gesture=gest_touch_xyz.gesture;
+	  touch=gest_touch_xyz.touch;
+	  if((gesture & 0xFF)==2)//west to east
+		  BSP_LCD_Clear(LCD_COLOR_GREEN);
+	  if((gesture & 0xFF)==3)//east to west
+		  BSP_LCD_Clear(LCD_COLOR_BLUE);
+	  if((gesture & 0xFF)==4)//south to north
+			  BSP_LCD_Clear(LCD_COLOR_RED);
+	  if((gesture & 0xFF)==5)//north to south
+			  BSP_LCD_Clear(LCD_COLOR_YELLOW);
+	  if(pozycja(&gest_touch_xyz)==1)
+		  BSP_LCD_Clear(LCD_COLOR_WHITE);
+	  if(pozycja(&gest_touch_xyz)==2)
+		  BSP_LCD_Clear(LCD_COLOR_MAGENTA);
+	  if(pozycja(&gest_touch_xyz)==3)
+		  BSP_LCD_Clear(LCD_COLOR_CYAN);
+	  if(pozycja(&gest_touch_xyz)==4)
+	 		  BSP_LCD_Clear(LCD_COLOR_GREEN);
+	  //komentarz
+
+	  sprintf(str, "g:%lx             ", gesture);
 	  sprintf(str, "d:%d             ", flick_airwheel_direction(airwheel));
 	  BSP_LCD_DisplayStringAtLine(1, (uint8_t *) str);
 	  sprintf(str, "g:%d             ", flick_gesture_value(gesture));
@@ -687,5 +728,5 @@ void assert_failed(uint8_t *file, uint32_t line)
   /* USER CODE END 6 */
 }
 #endif /* USE_FULL_ASSERT */
-
+//czy to w końcu zostanie załadowane?
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
