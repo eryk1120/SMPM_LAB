@@ -1,20 +1,20 @@
 /**
-  ******************************************************************************
-  * @file    lcd.c
-  ******************************************************************************
-  * @attention
-  *
-  * Copyright (c) 2015 STMicroelectronics.<br>
-  * Copyright (c) 2021 Mateusz Szumilas @ WUT Faculty of Mechatronics.<br>
-  * All rights reserved.
-  *
-  * This software component is licensed under BSD 3-Clause license,
-  * the "License"; You may not use this file except in compliance with the
-  * License. You may obtain a copy of the License at:
-  *                        opensource.org/licenses/BSD-3-Clause
-  *
-  ******************************************************************************
-  */
+ ******************************************************************************
+ * @file    lcd.c
+ ******************************************************************************
+ * @attention
+ *
+ * Copyright (c) 2015 STMicroelectronics.<br>
+ * Copyright (c) 2021 Mateusz Szumilas @ WUT Faculty of Mechatronics.<br>
+ * All rights reserved.
+ *
+ * This software component is licensed under BSD 3-Clause license,
+ * the "License"; You may not use this file except in compliance with the
+ * License. You may obtain a copy of the License at:
+ *                        opensource.org/licenses/BSD-3-Clause
+ *
+ ******************************************************************************
+ */
 
 #include "IMU.h"
 
@@ -80,7 +80,7 @@ void wczytywanie_IMU(float *IMU_raw, I2C_HandleTypeDef hi2c2) {
 	{
 		HAL_I2C_Mem_Read(&hi2c2, ACC_GYRO_ADDR, OUTX_L_XL, I2C_MEMADD_SIZE_8BIT,
 				i2c2_buf, 6, 1); /* odczytwartosci z czujnika
-		 dodanie bajtu starszego z mlodszym, starszy bajt przesuwam o 8 bitów w lewo, */
+				 dodanie bajtu starszego z mlodszym, starszy bajt przesuwam o 8 bitów w lewo, */
 		pom = i2c2_buf[1] << 8;
 		odczyt[0] = i2c2_buf[0] + pom;
 		pom = i2c2_buf[3] << 8;
@@ -104,7 +104,7 @@ void wczytywanie_IMU(float *IMU_raw, I2C_HandleTypeDef hi2c2) {
 	{
 		HAL_I2C_Mem_Read(&hi2c2, ACC_GYRO_ADDR, OUTX_L_G, I2C_MEMADD_SIZE_8BIT,
 				i2c2_buf, 6, 1); /* odczytwartosci z czujnika
-		 polaczenie bajtu starszego z mlodszym, starszy bajt przesuwam o 8 bitów lewo, dodaje bajty */
+				 polaczenie bajtu starszego z mlodszym, starszy bajt przesuwam o 8 bitów lewo, dodaje bajty */
 		pom = i2c2_buf[1] << 8;
 		odczyt[3] = i2c2_buf[0] + pom;
 		pom = i2c2_buf[3] << 8;
@@ -113,7 +113,7 @@ void wczytywanie_IMU(float *IMU_raw, I2C_HandleTypeDef hi2c2) {
 		odczyt[5] = i2c2_buf[4] + pom;
 
 		/*zamiana jednostek z int16_t na odpowiednie jednostki fizyczne
-		  gyro dla zakresu 500dps, [radians per second] */
+		 gyro dla zakresu 500dps, [radians per second] */
 		IMU_raw[3] = (float) odczyt[3] * 500 / 32768 * 0.01745;
 		IMU_raw[4] = (float) odczyt[4] * 500 / 32768 * 0.01745;
 		IMU_raw[5] = (float) odczyt[5] * 500 / 32768 * 0.01745;
@@ -140,9 +140,9 @@ void wczytywanie_IMU(float *IMU_raw, I2C_HandleTypeDef hi2c2) {
 		odczyt[8] = i2c2_buf[4] + pom;
 
 		/* zamiana jednostek z int16_t na odpowiednie jednostki fizyczne
-		  magnetometr dla zakresu +-4Gs, wynikw [Gs], korekda doświadczalnie wyznaczona */
+		 magnetometr dla zakresu +-4Gs, wynikw [Gs], korekda doświadczalnie wyznaczona */
 		IMU_raw[6] = ((float) odczyt[6] - 2037) * 4 / 32768;
-		IMU_raw[7] = ((float) odczyt[7] + 1734) * 4 / 32768;
+		IMU_raw[7] = ((float) odczyt[7] + 2037) * 4 / 32768;
 		IMU_raw[8] = ((float) odczyt[8] + 570) * 4 / 32768;
 
 		//	  sprintf(str, "acc %+4hi%+4hi%+4hi",
@@ -158,7 +158,7 @@ void wczytywanie_IMU(float *IMU_raw, I2C_HandleTypeDef hi2c2) {
 	//			  (float)*(IMU_raw + 7), (float)*(IMU_raw + 8), (float)*(IMU_raw + 9));
 }
 
-void Euler(float *IMU_raw, int8_t *eulerAngles) {
+void Euler(float *IMU_raw, int16_t *eulerAngles) {
 
 	// Calculating raw values: pitch, theta gathered only from acceleroemter
 	thetaRAW_a = -atan2(IMU_raw[0] / 9.8, IMU_raw[2] / 9.8) / 2 / 3.141592654
