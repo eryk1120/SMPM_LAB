@@ -60,7 +60,7 @@ TIM_HandleTypeDef htim4;
 UART_HandleTypeDef huart2;
 
 // int8_t table for eulerAngles [0] for pitch, [1] for roll, [2] for yaw
-int8_t eulerAngles[3] = { 0 };
+int16_t eulerAngles[3] = { 0 };
 
 //dane XYZ z IMU: acc 0-2, gyr 3-5, mag 6-8; jednostki: [m/s^2], [dps], [Gs]
 float IMU_raw[9] = { 0 };
