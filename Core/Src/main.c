@@ -276,7 +276,7 @@ int main(void)
 //			//To jest tylko utuchomienie timera z obsługą przerwania
 //			//Nie ma potrzeby się tu pokazywać dopóki te kroki się nie wykonają
 //
-//			//należy zadawać co jakiś czas określoną liczbę kroków i wmiedzy czasie odczytywać inne wartosci (zwolnić moc obliczeniową
+//			//należy zadawać co jakiś czas określoną liczbę kroków i wmiedzy czasie odczytywać inne wartosci (zwolnić moc obliczeniową)
 //		}
 
 
@@ -307,7 +307,7 @@ int main(void)
 
 			kat_obr = rot_angle; //ogólnie to użytkownik to będzie podawał poprzez GUI
 
-			while((kat_start - 2) <= kat_obecny && kat_obecny <= (kat_start + 2)) //ustawienie na pozycje startową
+			while(!((kat_start - 2) <= kat_obecny && kat_obecny <= (kat_start + 2))) //ustawienie na pozycje startową
 			{
 
 				euler();
@@ -322,7 +322,7 @@ int main(void)
 					HAL_TIM_PWM_Start_IT(&htim2, TIM_CHANNEL_2);
 
 				}
-				if(0 >= (kat_obecny - kat_start))
+				if(0 > (kat_obecny - kat_start))
 				{
 					HAL_GPIO_WritePin(GPIOA, MOT_DIR1_Pin, GPIO_PIN_RESET); //ustawienie obrotów w prawo
 					pulse_cnt = (abs(kat_obecny - kat_start)) * 32000 / 360;
@@ -332,24 +332,24 @@ int main(void)
 
 			}
 
-			while((kat_start + kat_obr - 1) <= kat_obecny && kat_obecny <= (kat_start + kat_obr + 1)) //przemieszczanie sie z kierunku A na kierunek B
+			while(!((kat_start + kat_obr - 2) <= kat_obecny && kat_obecny <= (kat_start + kat_obr + 2))) //przemieszczanie sie z kierunku A na kierunek B
 			{
 
 				euler();
 				kat_obecny = eulerAngles[2] * 180 / 3,14; //odczytanie bieżącego kąta, GUI pobira tą wartość
 				Current_angle_screen(kat_obecny); // przekazanie kąta obecnego na screen do GUI
 
-				if(kat_start <= (kat_start + kat_obr))
+				if(kat_obecny >= kat_start + kat_obr)
 				{
 					HAL_GPIO_WritePin(GPIOA, MOT_DIR1_Pin, GPIO_PIN_SET); //ustawienie obrotów w lewo
-					pulse_cnt = (abs(kat_obr)) * 32000 / 360;
+					pulse_cnt = (abs(kat_start + kat_obr - kat_obecny)) * 32000 / 360;
 					HAL_TIM_PWM_Start_IT(&htim2, TIM_CHANNEL_2);
 				}
 
-				if(kat_start <= (kat_start + kat_obr))
+				if(kat_obecny < kat_start + kat_obr)
 				{
 					HAL_GPIO_WritePin(GPIOA, MOT_DIR1_Pin, GPIO_PIN_RESET); //ustawienie obrotów w prawo
-					pulse_cnt = (abs(kat_obr)) * 32000 / 360;
+					pulse_cnt = (abs(kat_start + kat_obr - kat_obecny)) * 32000 / 360;
 					HAL_TIM_PWM_Start_IT(&htim2, TIM_CHANNEL_2);
 				}
 
@@ -390,13 +390,8 @@ int main(void)
 
 
 			}
-
 		}
-
-
-
-
-
+	}
   /* USER CODE END 3 */
 }
 
