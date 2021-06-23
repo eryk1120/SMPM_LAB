@@ -82,6 +82,8 @@ void Pulse_Counter(void);
 #define MOT_RESET_GPIO_Port GPIOA
 #define MOT_FAULT_Pin GPIO_PIN_10
 #define MOT_FAULT_GPIO_Port GPIOA
+#define MOT_WARUNEK_OPUSZCZENIA_Pin GPIO_PIN_12
+#define MOT_WARUNEK_OPUSZCZENIA_GPIO_Port GPIOA
 #define MOT_PWM1_Pin GPIO_PIN_3
 #define MOT_PWM1_GPIO_Port GPIOB
 #define MOT_MODE1_Pin GPIO_PIN_4
