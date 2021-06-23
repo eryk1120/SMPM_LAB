@@ -62,6 +62,7 @@ double kat_start; // = 30; //ogólnie to użytkownik to będzie podawał poprzez
 double kat_obr;// = 60; //ogólnie to użytkownik to będzie podawał poprzez GUI
 int opuszczenie = 0; //warunek opuszczenia trybu 1 ustawinay przez gest z Flicka
 
+
 /* USER CODE BEGIN PV */
 
 I2C_HandleTypeDef *hi2cflick = &hi2c1;
@@ -282,15 +283,12 @@ int main(void)
 
 
 
-
-
-
-
 		
 		Screen_Motor_Steering(uint16_t gesture_2); // funkcja GUI do rozpoznania trybu (tryb), wymaga wpisania przez zespół GUI poprawnych parametrów wywołania funkcji
 		Angle_menu(const wchar_t *Title, uint16_t current_angle, int Mode); // funkcja GUI do obliczenia wartości kat_start i kat_obr, wymaga wpisania przez zespół GUI poprawnych parametrów wywołania funkcji
 		tryb = zmienna_z_funkcji_Screen_Motor_Steering; // dopisać nazwę zmiennej globalnej
 		kat_start = start_angle; //ogólnie to użytkownik to będzie podawał poprzez GUI
+
 
 		euler();
 		kat_obecny = eulerAngles[2] * 180 / 3,14; //odczytanie bieżącego kąta, GUI pobira tą wartość
@@ -382,10 +380,12 @@ int main(void)
 					HAL_TIM_PWM_Start_IT(&htim2, TIM_CHANNEL_2);
 				}
 
+
 				if(funckja_sprawdzenie_gestu == 1) //sprawdzenie czy użytkownik chce wyjść z petli
 				{
 					opuszczenie = 1;
 				}
+
 			}
 		}
 	}
