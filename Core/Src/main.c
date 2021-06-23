@@ -56,6 +56,12 @@ TIM_HandleTypeDef htim4;
 
 UART_HandleTypeDef huart2;
 
+double kat_obecny; //dane z funkci IMU
+_Bool tryb; // = 0; //ogólnie to użytkownik to będzie podawał poprzez GUI
+double kat_start; // = 30; //ogólnie to użytkownik to będzie podawał poprzez GUI
+double kat_obr;// = 60; //ogólnie to użytkownik to będzie podawał poprzez GUI
+int opuszczenie = 0; //warunek opuszczenia trybu 1 ustawinay przez gest z Flicka
+
 /* USER CODE BEGIN PV */
 
 I2C_HandleTypeDef *hi2cflick = &hi2c1;
@@ -243,8 +249,6 @@ int main(void)
 		sprintf(str, "t:%lx             ", touch);
 		BSP_LCD_DisplayStringAtLine(3, (uint8_t *) str);
 
-		if ((uint8_t) gesture == 2)
-			HAL_GPIO_TogglePin(MOT_DIR1_GPIO_Port, MOT_DIR1_Pin); //zmiana kierunku obrotu silnika na przeciwny_MW
 
 		/* IMU */
 		HAL_I2C_Mem_Read(&hi2c2, ACC_GYRO_ADDR, STATUS_REG, I2C_MEMADD_SIZE_8BIT, i2c2_buf, 1, 1);
@@ -266,23 +270,15 @@ int main(void)
 
 		HAL_Delay(100);
 
-		if (HAL_GPIO_ReadPin(B1_GPIO_Port, B1_Pin) == GPIO_PIN_RESET)
-		{
-			//		  float cnt = (float)__HAL_TIM_GetCounter(&htim4) / 10;
-			//
-			//		  uint8_t str[20];
-			//		  sprintf((char*)str, "mot %.1f\r", cnt);
-			//		  BSP_LCD_DisplayStringAtLine(5, (uint8_t *) str);
-
-			pulse_cnt = 500;	//ilość impulsów o jaki silnik ma się poruszyć (ruch zależy od ustawień stepsticka)_MW
-			HAL_TIM_PWM_Start_IT(&htim2, TIM_CHANNEL_2); //uruchomienie PWM czyli generowania impulsów i my tu nie zostajemy (kroki się wykonują.
-			//To jest tylko utuchomienie timera z obsługą przerwania
-			//Nie ma potrzeby się tu pokazywać dopóki te kroki się nie wykonają
-
-			//należy zadawać co jakiś czas określoną liczbę kroków i wmiedzy czasie odczytywać inne wartosci (zwolnić moc obliczeniową)
-
-
-		}
+//		if (HAL_GPIO_ReadPin(B1_GPIO_Port, B1_Pin) == GPIO_PIN_RESET)
+//		{
+//			pulse_cnt = 500;	//ilość impulsów o jaki silnik ma się poruszyć (ruch zależy od ustawień stepsticka)_MW
+//			HAL_TIM_PWM_Start_IT(&htim2, TIM_CHANNEL_2); //uruchomienie PWM czyli generowania impulsów i my tu nie zostajemy (kroki się wykonują.
+//			//To jest tylko utuchomienie timera z obsługą przerwania
+//			//Nie ma potrzeby się tu pokazywać dopóki te kroki się nie wykonają
+//
+//			//należy zadawać co jakiś czas określoną liczbę kroków i wmiedzy czasie odczytywać inne wartosci (zwolnić moc obliczeniową)
+//		}
 
 
 
@@ -290,15 +286,16 @@ int main(void)
 
 
 
+		
+		Screen_Motor_Steering(uint16_t gesture_2); // funkcja GUI do rozpoznania trybu (tryb), wymaga wpisania przez zespół GUI poprawnych parametrów wywołania funkcji
+		Angle_menu(const wchar_t *Title, uint16_t current_angle, int Mode); // funkcja GUI do obliczenia wartości kat_start i kat_obr, wymaga wpisania przez zespół GUI poprawnych parametrów wywołania funkcji
+		tryb = zmienna_z_funkcji_Screen_Motor_Steering; // dopisać nazwę zmiennej globalnej
+		kat_start = start_angle; //ogólnie to użytkownik to będzie podawał poprzez GUI
 
-
-		_Bool tryb = 0; //ogólnie to użytkownik to będzie podawał poprzez GUI
-		double kat_start = 30; //ogólnie to użytkownik to będzie podawał poprzez GUI
-		double kat_obr = 60; //ogólnie to użytkownik to będzie podawał poprzez GUI
-		double czas = 120; //chyba nie będzie potrzebna ta zmienna bo wymagałaby zmiany wartości w liczniku tim2 (będziemy poruszać sie z stałą prędkością)
-		double kat_obecny; //dane z funkci IMU
+		euler();
+		kat_obecny = eulerAngles[2] * 180 / 3,14; //odczytanie bieżącego kąta, GUI pobira tą wartość
+		Current_angle_screen(kat_obecny); // przekazanie kąta obecnego na screen do GUI
 		HAL_GPIO_WritePin(GPIOA, MOT_WARUNEK_OPUSZCZENIA, GPIO_PIN_RESET);
-
 
 
 
@@ -307,23 +304,26 @@ int main(void)
 
 			euler();
 			kat_obecny = eulerAngles[2] * 180 / 3,14; //odczytanie bieżącego kąta, GUI pobira tą wartość
+			Current_angle_screen(kat_obecny); // przekazanie kąta obecnego na screen do GUI
 
+			kat_obr = rot_angle; //ogólnie to użytkownik to będzie podawał poprzez GUI
 
-			while((kat_start - 2) <= kat_obecny && kat_obecny <= (kat_start + 2)) //ustawienie na pozycje startową
+			while(!((kat_start - 2) <= kat_obecny && kat_obecny <= (kat_start + 2))) //ustawienie na pozycje startową
 			{
 
 				euler();
 				kat_obecny = eulerAngles[2] * 180 / 3,14; //odczytanie bieżącego kąta, GUI pobira tą wartość
-
+				Current_angle_screen(kat_obecny); // przekazanie kąta obecnego na screen do GUI
+				
 				if(0 <= (kat_obecny - kat_start))
 				{
 
 					HAL_GPIO_WritePin(GPIOA, MOT_DIR1_Pin, GPIO_PIN_SET); //ustawienie obrotów w lewo
-					pulse_cnt = (abs(kat_obecny - kat_start)) * 32000 / 360; //2000
+					pulse_cnt = (abs(kat_obecny - kat_start)) * 32000 / 360; //2000 // mikrokroki na kąt i mnożone przez kąt obrotu
 					HAL_TIM_PWM_Start_IT(&htim2, TIM_CHANNEL_2);
 
 				}
-				if(0 >= (kat_obecny - kat_start))
+				if(0 > (kat_obecny - kat_start))
 				{
 					HAL_GPIO_WritePin(GPIOA, MOT_DIR1_Pin, GPIO_PIN_RESET); //ustawienie obrotów w prawo
 					pulse_cnt = (abs(kat_obecny - kat_start)) * 32000 / 360;
@@ -333,23 +333,24 @@ int main(void)
 
 			}
 
-			while((kat_start + kat_obr - 1) <= kat_obecny && kat_obecny <= (kat_start + kat_obr + 1)) //przemieszczanie sie z kierunku A na kierunek B
+			while(!((kat_start + kat_obr - 2) <= kat_obecny && kat_obecny <= (kat_start + kat_obr + 2))) //przemieszczanie sie z kierunku A na kierunek B
 			{
 
 				euler();
 				kat_obecny = eulerAngles[2] * 180 / 3,14; //odczytanie bieżącego kąta, GUI pobira tą wartość
+				Current_angle_screen(kat_obecny); // przekazanie kąta obecnego na screen do GUI
 
-				if(kat_start <= (kat_start + kat_obr))
+				if(kat_obecny >= kat_start + kat_obr)
 				{
 					HAL_GPIO_WritePin(GPIOA, MOT_DIR1_Pin, GPIO_PIN_SET); //ustawienie obrotów w lewo
-					pulse_cnt = (abs(kat_obr)) * 32000 / 360;
+					pulse_cnt = (abs(kat_start + kat_obr - kat_obecny)) * 32000 / 360;
 					HAL_TIM_PWM_Start_IT(&htim2, TIM_CHANNEL_2);
 				}
 
-				if(kat_start <= (kat_start + kat_obr))
+				if(kat_obecny < kat_start + kat_obr)
 				{
 					HAL_GPIO_WritePin(GPIOA, MOT_DIR1_Pin, GPIO_PIN_RESET); //ustawienie obrotów w prawo
-					pulse_cnt = (abs(kat_obr)) * 32000 / 360;
+					pulse_cnt = (abs(kat_start + kat_obr - kat_obecny)) * 32000 / 360;
 					HAL_TIM_PWM_Start_IT(&htim2, TIM_CHANNEL_2);
 				}
 
@@ -361,41 +362,33 @@ int main(void)
 
 		if(tryb == 1)
 		{
-			while(MOT_WARUNEK_OPUSZCZENIA == 1) //podążanie za pozycją startową z stałą prędkością
+			while(!(opuszcenie == 1)) //podążanie za pozycją startową z stałą prędkością
 			{
 
 				euler();
 				kat_obecny = eulerAngles[2] * 180 / 3,14; //odczytanie bieżącego kąta, GUI pobira tą wartość
+				Current_angle_screen(kat_obecny); // przekazanie kąta obecnego na screen do GUI
 
 				if(0 <= kat_obecny - kat_start)
 				{
 					HAL_GPIO_WritePin(GPIOA, MOT_DIR1_Pin, GPIO_PIN_SET); //ustawienie obrotów w lewo
 					pulse_cnt = (abs(kat_obecny - kat_start)) * 32000 / 360;
 					HAL_TIM_PWM_Start_IT(&htim2, TIM_CHANNEL_2);
-					//dodać sprawdzenie czy użytkownik nie chce opuścić trybu 1
 				}
 				if(0 >= kat_obecny - kat_start)
 				{
 					HAL_GPIO_WritePin(GPIOA, MOT_DIR1_Pin, GPIO_PIN_RESET); //ustawienie obrotów w prawo
 					pulse_cnt = (abs(kat_obecny - kat_start)) * 32000 / 360;
 					HAL_TIM_PWM_Start_IT(&htim2, TIM_CHANNEL_2);
-					//dodać sprawdzenie czy użytkownik nie chce opuścić trybu 1
 				}
 
-//				if(sprawdzenie czy opuścić funkcje od flicka)
-//				{
-//					HAL_GPIO_WritePin(GPIOA, MOT_WARUNEK_OPUSZCZENIA, GPIO_PIN_SET);
-//				}
-
-
+				if(funckja_sprawdzenie_gestu == 1) //sprawdzenie czy użytkownik chce wyjść z petli
+				{
+					opuszczenie = 1;
+				}
 			}
-
 		}
-
-
-
-
-
+	}
   /* USER CODE END 3 */
 }
 
