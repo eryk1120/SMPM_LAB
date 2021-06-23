@@ -60,6 +60,8 @@ double kat_obecny; //dane z funkci IMU
 _Bool tryb; // = 0; //ogólnie to użytkownik to będzie podawał poprzez GUI
 double kat_start; // = 30; //ogólnie to użytkownik to będzie podawał poprzez GUI
 double kat_obr;// = 60; //ogólnie to użytkownik to będzie podawał poprzez GUI
+int opuszczenie = 0; //warunek opuszczenia trybu 1 ustawinay przez gest z Flicka
+
 
 /* USER CODE BEGIN PV */
 
@@ -281,16 +283,13 @@ int main(void)
 
 
 
-
-
-
-
 		
 		Screen_Motor_Steering(uint16_t gesture_2); // funkcja GUI do rozpoznania trybu (tryb), wymaga wpisania przez zespół GUI poprawnych parametrów wywołania funkcji
 		Angle_menu(const wchar_t *Title, uint16_t current_angle, int Mode); // funkcja GUI do obliczenia wartości kat_start i kat_obr, wymaga wpisania przez zespół GUI poprawnych parametrów wywołania funkcji
 		tryb = zmienna_z_funkcji_Screen_Motor_Steering; // dopisać nazwę zmiennej globalnej
 		kat_start = start_angle; //ogólnie to użytkownik to będzie podawał poprzez GUI
-		// na razie tego nie robimy - double czas = 120; //chyba nie będzie potrzebna ta zmienna bo wymagałaby zmiany wartości w liczniku tim2 (będziemy poruszać sie z stałą prędkością)
+
+
 		euler();
 		kat_obecny = eulerAngles[2] * 180 / 3,14; //odczytanie bieżącego kąta, GUI pobira tą wartość
 		Current_angle_screen(kat_obecny); // przekazanie kąta obecnego na screen do GUI
@@ -361,7 +360,7 @@ int main(void)
 
 		if(tryb == 1)
 		{
-			while(MOT_WARUNEK_OPUSZCZENIA == 1) //podążanie za pozycją startową z stałą prędkością
+			while(!(opuszcenie == 1)) //podążanie za pozycją startową z stałą prędkością
 			{
 
 				euler();
@@ -373,21 +372,19 @@ int main(void)
 					HAL_GPIO_WritePin(GPIOA, MOT_DIR1_Pin, GPIO_PIN_SET); //ustawienie obrotów w lewo
 					pulse_cnt = (abs(kat_obecny - kat_start)) * 32000 / 360;
 					HAL_TIM_PWM_Start_IT(&htim2, TIM_CHANNEL_2);
-					//dodać sprawdzenie czy użytkownik nie chce opuścić trybu 1
 				}
 				if(0 >= kat_obecny - kat_start)
 				{
 					HAL_GPIO_WritePin(GPIOA, MOT_DIR1_Pin, GPIO_PIN_RESET); //ustawienie obrotów w prawo
 					pulse_cnt = (abs(kat_obecny - kat_start)) * 32000 / 360;
 					HAL_TIM_PWM_Start_IT(&htim2, TIM_CHANNEL_2);
-					//dodać sprawdzenie czy użytkownik nie chce opuścić trybu 1
 				}
 
-//				if(funckja_sprawdzenie_gestu==1)
-//				{
-//					HAL_GPIO_WritePin(GPIOA, MOT_WARUNEK_OPUSZCZENIA, GPIO_PIN_SET);
-//				}
 
+				if(funckja_sprawdzenie_gestu == 1) //sprawdzenie czy użytkownik chce wyjść z petli
+				{
+					opuszczenie = 1;
+				}
 
 			}
 		}
