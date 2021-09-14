@@ -155,10 +155,8 @@ int main(void)
 
   /* Flick */
   flick_reset();
-  flick_set_param(0x90, 0x20, 0x20); //ustawienie odpowiednich parametrow do wlaczenia airwheela
-  flick_set_param(0x97, 0x08, 0x08); //ustawienie odpowiednich parametrow do wlaczenia dotyku
-  flick_set_param(0x85, 0x66, 0x66); //ustawienie odpowiednich parametrow do wlaczenia przesunięcia nad flickiem.
-                                     //Ustawiony został bit 1, 2, 5, 6. 37 strona w dokumentacji tlumaczy co oznaczaja odpowiednie bity
+  flick_gesture_set();
+  uint8_t old_angular_position = 0;
 
   /* IMU */
   uint8_t i2c2_buf[10];
@@ -192,11 +190,13 @@ int main(void)
     /* USER CODE BEGIN 3 */
 
 	  uint32_t gesture, touch;
-
 	  airwheel_data_t airwheel;
+	  gest_touch_xyz_data_t gest_touch_xyz;
+
 	  char str[20];
 
-	  flick_poll_data(&gesture, &touch, &airwheel);
+	  flick_poll_data(&gest_touch_xyz, &airwheel);
+
 
 	  if(airwheel.new_data == FLICK_NEW_DATA)
 	  {
@@ -206,6 +206,9 @@ int main(void)
 
 		  sprintf(str, "pos: %02d cnt: %02d", airwheel.position, airwheel.count);
 		  BSP_LCD_DisplayStringAtLine(4, (uint8_t *) str);
+	  char str[20];
+
+	  flick_poll_data(&gest_touch_xyz, &airwheel);
 
 		  uint8_t circy = 110 - 12 * sin(2*3.1416*airwheel.position/32);
 		  uint8_t circx = 50 - 12 * cos(2*3.1416*airwheel.position/32);
@@ -214,21 +217,36 @@ int main(void)
 
 		  airwheel.new_data = FLICK_NO_DATA;
 	  }
-	  if(gesture&(1<<1))
+	  uint16_t Xpom=gest_touch_xyz.X;
+	  uint16_t Ypom=gest_touch_xyz.Y;
+	  uint16_t Zpom=gest_touch_xyz.Z;
+	  gesture=gest_touch_xyz.gesture;
+	  touch=gest_touch_xyz.touch;
+	  if((gesture & 0xFF)==2)//west to east
 		  BSP_LCD_Clear(LCD_COLOR_GREEN);
-	  if(gesture&(1<<2))
+	  if((gesture & 0xFF)==3)//east to west
 		  BSP_LCD_Clear(LCD_COLOR_BLUE);
+	  if((gesture & 0xFF)==4)//south to north
+			  BSP_LCD_Clear(LCD_COLOR_RED);
+	  if((gesture & 0xFF)==5)//north to south
+			  BSP_LCD_Clear(LCD_COLOR_YELLOW);
+	  if(flick_position_value(&gest_touch_xyz)==1)
+		  BSP_LCD_Clear(LCD_COLOR_WHITE);
+	  if(flick_position_value(&gest_touch_xyz)==2)
+		  BSP_LCD_Clear(LCD_COLOR_MAGENTA);
+	  if(flick_position_value(&gest_touch_xyz)==3)
+		  BSP_LCD_Clear(LCD_COLOR_CYAN);
+	  if(flick_position_value(&gest_touch_xyz)==4)
+	 		  BSP_LCD_Clear(LCD_COLOR_GREEN);
+	  //komentarz
 
 	  sprintf(str, "g:%lx             ", gesture);
+	  sprintf(str, "d:%d             ", flick_airwheel_direction(airwheel,&old_angular_position));
 	  BSP_LCD_DisplayStringAtLine(1, (uint8_t *) str);
-	  sprintf(str, "gest:%d           ", (uint8_t) gesture);
+	  sprintf(str, "g:%d             ", flick_gesture_value(gesture));
 	  BSP_LCD_DisplayStringAtLine(2, (uint8_t *) str);
-	  sprintf(str, "t:%lx             ", touch);
+	  sprintf(str, "q:%d             ", flick_position_value(&gest_touch_xyz));
 	  BSP_LCD_DisplayStringAtLine(3, (uint8_t *) str);
-
-
-	  if ((uint8_t) gesture == 2)
-		  HAL_GPIO_TogglePin(MOT_DIR1_GPIO_Port, MOT_DIR1_Pin);
 
 	  /* IMU */
 	  HAL_I2C_Mem_Read(&hi2c2, ACC_GYRO_ADDR, STATUS_REG, I2C_MEMADD_SIZE_8BIT, i2c2_buf, 1, 1);
@@ -715,5 +733,6 @@ void assert_failed(uint8_t *file, uint32_t line)
   /* USER CODE END 6 */
 }
 #endif /* USE_FULL_ASSERT */
-
+//czy to w końcu zostanie załadowane?
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
+

@@ -70,6 +70,19 @@ typedef struct {
 	uint8_t count;			/**< counts of full rotations */
 } airwheel_data_t;
 
+
+
+/**
+ * @brief Struktura, która przechowuje zmienne dotycznące gestów, dotknięc i pozycji XYZ
+ */
+typedef struct {
+	flick_data_t new_data;	/**< czy są nowe dane? */
+	uint32_t gesture;		/**< zmienna przechowująca odczytany gest */
+	uint32_t touch;			/**< zmienna przechowująca odczytany dotyk */
+	uint16_t X, Y, Z;		/**< zmienne przechowujące współrzędne XYZ */
+} gest_touch_xyz_data_t;
+
+
 /**
  * A handle for the I2C control structure (as used in the STM32 HAL library).
  * The structure should be initialized in the main user code
@@ -103,10 +116,62 @@ void flick_set_param(uint16_t param_ID, uint32_t arg0, uint32_t arg1);
  * @param airwheel		the @b airwheel_data_t structure, updated according to the received data (if any)
  * @return FLICK_NEW_DATA: if any data is available
  */
-flick_data_t flick_poll_data(uint32_t* gest_info, uint32_t* touch_info, airwheel_data_t* airwheel);
+flick_data_t flick_poll_data(gest_touch_xyz_data_t* gest_touch_xyz, airwheel_data_t* airwheel);
+
+int  pozycja (gest_touch_xyz_data_t* gest_touch_xyz);
 
 /**
- * @}
+ * @brief Funkcja wykorzystująca funckję flick_set_param w celu ustawienia dostepności odpowiednich gestów.
+ *
+ * Funkcja ta pozwala na uporządkowanie pliku main.c, pozwala na deklarację wykorzystywanych w programie gestów.
+ * <br> W tym programie użyte zostały 3 rodzaje gestów:
+ *   - przesuniecie dłonia nad flickiem w czterech kierunkach,
+ *   - airwheel,
+ *   - dotknięcie.
  */
+void flick_gesture_set(void);
+
+/**
+ * @brief Funkcja pozwalająca na określnie kierunku obrotu airwheela.
+ *
+ * Zwraca informację o kierunku obrotu w postaci liczbowej:
+ * <br> 1 - ruch w prawo
+ * <br> 2 - ruch w lewo
+ * <br> 0 - brak ruchu
+ *
+ * @param airwheel					Struktura, która zawierająca informacje pozycję oraz liczbe obrotów airwheela.
+ * @param old_angular_position		Zmienna przechowująca poprzednią pozycję katową airwheela.
+ * @return gesture_rot_direction: 1,2,0
+ */
+uint8_t flick_airwheel_direction(airwheel_data_t airwheel, uint8_t* old_angular_position);
+
+/**
+ * @brief Funkcja pozwalająca na określenie rodzaju wykonanego gestu - kierunku przesunięcia dłoni nad Flickiem.
+ *
+ * Zwraca info o geście w postaci liczbowej:
+ * <br> 1 - West to East
+ * <br> 2 - East to West
+ * <br> 3 - South to North
+ * <br> 4 - North to South
+ * <br> 0 - brak gestu
+ * @param gesture					Wartość liczbowa odczytanego gestu.
+ * @return gesture_number: 1,2,3,4,0
+ */
+uint8_t flick_gesture_value(uint32_t gesture);
+
+/**
+ * @brief Funkcja pozwalająca na określenie ćwiartki Flicka, w której nastąpiło dotknięcie.
+ *
+ * Zwracane są wartości konkretnej ćwiartki ekranu - podział:
+ * <br> 1 - lewy górny
+ * <br> 2 - prawy górny
+ * <br> 3 - lewy dolny
+ * <br> 4 - prawy dolny
+ * <br> 0 - brak dotknięcia
+ * @param gest_touch_xyz			Struktura przechowująca informacje o gestach, dotknięciach oraz pozycji XYZ.
+ * @return touch_q: 1,2,3,4,0
+ */
+uint8_t flick_position_value(gest_touch_xyz_data_t* gest_touch_xyz);
+
 
 #endif /* INC_FLICK_H_ */

@@ -14,7 +14,7 @@ var stm32__adafruit__lcd_8h =
     [ "LCD_ERROR", "group___s_t_m32___a_d_a_f_r_u_i_t___l_c_d___exported___constants.html#gac639f5b04db49abc3ad579c3ae342adb", null ],
     [ "LCD_OK", "group___s_t_m32___a_d_a_f_r_u_i_t___l_c_d___exported___constants.html#ga7246e715a8e53f519569b649e6ce733d", null ],
     [ "LCD_TIMEOUT", "group___s_t_m32___a_d_a_f_r_u_i_t___l_c_d___exported___constants.html#ga68e1235b7ce21c42f5c85e22d9331e0a", null ],
-    [ "pPoint", "group___s_t_m32___a_d_a_f_r_u_i_t___l_c_d___exported___types.html#gade44147f1b04a7d9ef67adcb48416cbe", null ],
+    [ "pPoint", "group___s_t_m32___a_d_a_f_r_u_i_t___l_c_d___exported___types.html#gace93ab3d3cf5a56891a5728ae2695e41", null ],
     [ "Line_ModeTypdef", "group___s_t_m32___a_d_a_f_r_u_i_t___l_c_d___exported___types.html#ga664d4ab58ac192c237c413872ed4593d", [
       [ "CENTER_MODE", "group___s_t_m32___a_d_a_f_r_u_i_t___l_c_d___exported___types.html#gga664d4ab58ac192c237c413872ed4593da9537d6002fff2059cf4cf52d15bcf3ae", null ],
       [ "RIGHT_MODE", "group___s_t_m32___a_d_a_f_r_u_i_t___l_c_d___exported___types.html#gga664d4ab58ac192c237c413872ed4593daaaf915815100f7533b48039944d6f730", null ],
